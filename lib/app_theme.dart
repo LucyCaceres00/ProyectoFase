@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // Definimos los colores constantes
-  static const Color primaryColor = Color(0xFF6200EE); // Morado
-  static const Color secondaryColor = Color(0xFF03DAC6); // Cian
+  static const Color primaryColor = Color.fromARGB(255, 40, 69, 214); // Morado
+  static const Color secondaryColor = Color.fromARGB(255, 156, 207, 255); // Cian
   static const Color backgroundColor = Color(0xFFF5F5F5);
 
   static ThemeData get lightTheme {
@@ -13,12 +13,12 @@ class AppTheme {
         seedColor: primaryColor,
         primary: primaryColor,
         secondary: secondaryColor,
-        surface: backgroundColor,
+        surface: const Color.fromARGB(255, 50, 127, 90),
       ),
       // También puedes personalizar botones aquí
       appBarTheme: const AppBarTheme(
         backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: Color.fromARGB(255, 135, 14, 14),
       ),
     );
   }
