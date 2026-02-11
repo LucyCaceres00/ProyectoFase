@@ -46,7 +46,6 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // Mostrar loading
     setState(() {
       _isLoading = true;
     });
@@ -121,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 80),
+            const SizedBox(height: 120),
 
             Image.asset(
               'imagenes/toori_logo_letras.png',

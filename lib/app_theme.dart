@@ -13,7 +13,7 @@ class AppTheme {
         seedColor: primaryColor,
         primary: primaryColor,
         secondary: secondaryColor,
-        surface: const Color.fromARGB(255, 50, 127, 90),
+        surface: const Color.fromARGB(255, 206, 221, 93),
       ),
       // También puedes personalizar botones aquí
       appBarTheme: const AppBarTheme(

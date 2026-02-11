@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'app_theme.dart'; // Importa tu archivo
-import 'paginas/inicio_sesion/inicio_sesion.dart'; // Importa tu archivo
+import 'app_theme.dart'; 
+import 'paginas/inicio_sesion/inicio_sesion.dart'; 
 
 void main() => runApp(const MyApp());
 

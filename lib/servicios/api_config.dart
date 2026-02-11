@@ -1,7 +1,7 @@
 class ApiConfig {
   // URL base del API según la plataforma
   static String get baseUrl {
-    return 'http://192.168.100.102:5209/api/';
+    return 'http://192.168.100.90:5209/api/';
   }
 
   // Timeout para las peticiones (en segundos)

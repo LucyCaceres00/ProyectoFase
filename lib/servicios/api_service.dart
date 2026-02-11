@@ -181,7 +181,7 @@ class ApiService {
         // Error del servidor
         final message =
             jsonResponse['message'] ??
-            jsonResponse['mensaje'] ??
+            jsonResponse['Message'] ??
             'Error en la petición';
         return ApiResponse.error(message, statusCode: response.statusCode);
       }
