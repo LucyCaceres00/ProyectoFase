@@ -94,6 +94,7 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      extendBody: true,
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
@@ -164,20 +165,21 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
       ),
       // Bottom Navigation Bar estilizada
       bottomNavigationBar: Container(
-        margin: const EdgeInsets.all(12),
+        margin: const EdgeInsets.fromLTRB(12, 5, 12, 30),
         decoration: BoxDecoration(
           color: theme.colorScheme.primary,
           borderRadius: BorderRadius.circular(40),
         ),
         child: SizedBox(
-          height: 100,
+          height: 60,
           child: BottomNavigationBar(
             backgroundColor: const Color.fromARGB(0, 99, 4, 4),
             elevation: 0,
             currentIndex: _selectedIndex,
             onTap: (index) => setState(() => _selectedIndex = index),
-            selectedItemColor: Colors.white,
+            selectedItemColor: const Color.fromARGB(255, 180, 29, 29),
             unselectedItemColor: Colors.white,
+            showSelectedLabels: false,
             items: [
               BottomNavigationBarItem(
                 label: 'Inicio',

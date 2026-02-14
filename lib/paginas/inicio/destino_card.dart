@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../modelos/destino.dart';
+import 'destino_detalle.dart';
 
 class DestinoCard extends StatelessWidget {
   final Destino destino;
@@ -8,7 +9,14 @@ class DestinoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DestinoDetalleScreen(destino: destino),
+        ),
+      ),
+      child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -87,6 +95,7 @@ class DestinoCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }
