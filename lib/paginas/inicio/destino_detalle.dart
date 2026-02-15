@@ -15,7 +15,16 @@ class DestinoDetalleScreen extends StatelessWidget {
   const DestinoDetalleScreen({super.key, required this.destino});
 
   // Imágenes del carrusel (en una app real vendrían del modelo/API)
-  List<String> get _imagenes => List.filled(5, destino.imagen);
+  List<String> get _imagenes {
+    if (destino.galeriaimagenes != null &&
+        destino.galeriaimagenes!.isNotEmpty) {
+      return destino.galeriaimagenes!;
+    }
+    if (destino.imagenprincipal != null) {
+      return [destino.imagenprincipal!];
+    }
+    return [];
+  }
 
   // Abrir carrusel modal
   void _openCarousel(BuildContext context, int initial) {
@@ -29,8 +38,8 @@ class DestinoDetalleScreen extends StatelessWidget {
 
   // Abrir mapa: detecta automáticamente la app instalada
   Future<void> _openMapOptions(BuildContext context) async {
-    const double lat = 14.8394;
-    const double lng = -89.1430;
+    final double lat = destino.latitud;
+    final double lng = destino.longitud;
 
     final googleNative = Uri.parse(
       'comgooglemaps://?q=$lat,$lng&center=$lat,$lng',
@@ -180,11 +189,14 @@ class DestinoDetalleScreen extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              destino.imagen,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(color: Colors.grey[300]),
-            ),
+            destino.imagenprincipal != null
+                ? Image.network(
+                    destino.imagenprincipal!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        Container(color: Colors.grey[300]),
+                  )
+                : Container(color: Colors.grey[300]),
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -196,38 +208,39 @@ class DestinoDetalleScreen extends StatelessWidget {
               ),
             ),
             // Badge fotos
-            Positioned(
-              bottom: 48,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(
-                      Icons.photo_library_outlined,
-                      color: Colors.white,
-                      size: 14,
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      '+5 fotos',
-                      style: TextStyle(
+            if (_imagenes.isNotEmpty)
+              Positioned(
+                bottom: 48,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.photo_library_outlined,
                         color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        size: 14,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Text(
+                        '${_imagenes.length} foto${_imagenes.length == 1 ? '' : 's'}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
             // Botón atrás
             Positioned(
               top: MediaQuery.of(context).padding.top + 10,
@@ -296,7 +309,7 @@ class DestinoDetalleScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  destino.rating.toString(),
+                  destino.calificacionpromedio.toString(),
                   style: const TextStyle(
                     color: _textDark,
                     fontSize: 14,
@@ -323,13 +336,13 @@ class DestinoDetalleScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        const Row(
+        Row(
           children: [
-            Icon(Icons.location_on, color: _primary, size: 16),
-            SizedBox(width: 4),
+            const Icon(Icons.location_on, color: _primary, size: 16),
+            const SizedBox(width: 4),
             Text(
-              'Copán Ruinas, Copán',
-              style: TextStyle(
+              '${destino.municipio}, ${destino.departamento}',
+              style: const TextStyle(
                 color: _textMuted,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
@@ -397,10 +410,10 @@ class DestinoDetalleScreen extends StatelessWidget {
 
   // ── DESCRIPCIÓN ───────────────────────────────────────────────────────────
   Widget _buildDescription() {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Descripción',
           style: TextStyle(
             fontSize: 16,
@@ -408,13 +421,12 @@ class DestinoDetalleScreen extends StatelessWidget {
             color: _textDark,
           ),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         Text(
-          'Un destino de fascinante riqueza histórica y natural en el corazón '
-          'de Honduras. Reconocido por la UNESCO, este lugar combina '
-          'arquitectura prehispánica, biodiversidad única y una cultura viva '
-          'que invita a explorar cada rincón con asombro.',
-          style: TextStyle(fontSize: 14, color: _textMuted, height: 1.75),
+          destino.descripcion.isNotEmpty
+              ? destino.descripcion
+              : 'Sin descripción disponible.',
+          style: const TextStyle(fontSize: 14, color: _textMuted, height: 1.75),
         ),
       ],
     );
@@ -569,6 +581,8 @@ class DestinoDetalleScreen extends StatelessWidget {
   }
 
   // ── MAPA ──────────────────────────────────────────────────────────────────
+  bool get _tieneUbicacion => destino.latitud != 0.0 || destino.longitud != 0.0;
+
   Widget _buildMap(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -582,121 +596,148 @@ class DestinoDetalleScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        GestureDetector(
-          onTap: () => _openMapOptions(context),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: SizedBox(
-              height: 160,
-              child: Stack(
-                fit: StackFit.expand,
+        if (!_tieneUbicacion)
+          Container(
+            height: 100,
+            decoration: BoxDecoration(
+              color: _bg,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFFE8E8F0)),
+            ),
+            child: const Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(color: const Color(0xFFDDE8F5)),
-                  CustomPaint(painter: _MapPainter()),
-                  // Pin
-                  Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: _primary,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: _primary.withValues(alpha: 0.4),
-                                blurRadius: 12,
-                                spreadRadius: 4,
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.location_on,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: _primary.withValues(alpha: 0.3),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ],
-                    ),
+                  Icon(
+                    Icons.location_off_outlined,
+                    color: _textMuted,
+                    size: 28,
                   ),
-                  // Etiqueta
-                  Positioned(
-                    bottom: 12,
-                    left: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        destino.nombre,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: _textDark,
-                        ),
-                      ),
-                    ),
+                  SizedBox(height: 6),
+                  Text(
+                    'Ubicación no disponible',
+                    style: TextStyle(color: _textMuted, fontSize: 13),
                   ),
-                  // Ícono "tap para abrir"
-                  Positioned(
-                    bottom: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _primary,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Row(
+                ],
+              ),
+            ),
+          )
+        else
+          GestureDetector(
+            onTap: () => _openMapOptions(context),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: SizedBox(
+                height: 160,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Container(color: const Color(0xFFDDE8F5)),
+                    CustomPaint(painter: _MapPainter()),
+                    // Pin
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.open_in_new,
-                            color: Colors.white,
-                            size: 12,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            'Ver mapa',
-                            style: TextStyle(
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: _primary,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: _primary.withValues(alpha: 0.4),
+                                  blurRadius: 12,
+                                  spreadRadius: 4,
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.location_on,
                               color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: _primary.withValues(alpha: 0.3),
+                              shape: BoxShape.circle,
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                    // Etiqueta
+                    Positioned(
+                      bottom: 12,
+                      left: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          destino.nombre,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _textDark,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Ícono "tap para abrir"
+                    Positioned(
+                      bottom: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _primary,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.open_in_new,
+                              color: Colors.white,
+                              size: 12,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'Ver mapa',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }

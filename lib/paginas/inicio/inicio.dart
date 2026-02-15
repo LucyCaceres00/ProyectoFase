@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../modelos/destino.dart';
+import '../../servicios/destino_service.dart';
 import '../inicio_sesion/inicio_sesion.dart';
 import 'destino_card.dart';
 
@@ -12,85 +13,16 @@ class ExplorarDestinosScreen extends StatefulWidget {
 
 class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
   int _selectedIndex = 0;
+  late Future<List<Destino>> _destinosFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _destinosFuture = DestinoService.obtenerDestinos();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Lista de ejemplo basada en tu imagen
-    final destinos = [
-      Destino(
-        'Ruinas de Copán',
-        'Arqueología',
-        'https://images.unsplash.com/photo-1591551963955-9487b4973e84?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxDb3BhbiUyMHJ1aW5zJTIwSG9uZHVyYXMlMjBhcmNoYWVvbG9naWNhbHxlbnwxfHx8fDE3Njk5NzAyMzJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        4.8,
-      ),
-      Destino(
-        'Islas de la Bahía',
-        'Playas',
-        'https://images.unsplash.com/photo-1600273970168-c3db62dcf905?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxSb2F0YW4lMjBiZWFjaCUyMEhvbmR1cmFzJTIwdHJvcGljYWx8ZW58MXx8fHwxNzY5OTcwMjMyfDA&ixlib=rb-4.1.0&q=80&w=1080',
-        4.9,
-      ),
-      Destino(
-        'Parque Nacional La Tigra',
-        'Naturaleza',
-        'https://images.unsplash.com/photo-1656186349076-01691a1018db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cm9waWNhbCUyMGZvcmVzdCUyMHdhdGVyZmFsbCUyMEhvbmR1cmFzfGVufDF8fHx8MTc2OTk3MDIzNnww&ixlib=rb-4.1.0&q=80&w=1080',
-        4.6,
-      ),
-      Destino(
-        'Centro Histórico',
-        'Cultura',
-        'https://images.unsplash.com/photo-1635687202393-b7591bdaaafa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2xvbmlhbCUyMGFyY2hpdGVjdHVyZSUyMENlbnRyYWwlMjBBbWVyaWNhfGVufDF8fHx8MTc2OTk3MDIzNnww&ixlib=rb-4.1.0&q=80&w=1080',
-        4.5,
-      ),
-      Destino(
-        'Ruinas de Copán',
-        'Arqueología',
-        'https://images.unsplash.com/photo-1645512483786-42b653b0a923?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxUZWd1Y2lnYWxwYSUyMGNpdHklMjBIb25kdXJhc3xlbnwxfHx8fDE3Njk5NzAyMzN8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        4.8,
-      ),
-      Destino(
-        'Islas de la Bahía',
-        'Playas',
-        'https://images.unsplash.com/photo-1591551963955-9487b4973e84?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxDb3BhbiUyMHJ1aW5zJTIwSG9uZHVyYXMlMjBhcmNoYWVvbG9naWNhbHxlbnwxfHx8fDE3Njk5NzAyMzJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        4.9,
-      ),
-      Destino(
-        'Parque Nacional La Tigra',
-        'Naturaleza',
-        'https://images.unsplash.com/photo-1600273970168-c3db62dcf905?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxSb2F0YW4lMjBiZWFjaCUyMEhvbmR1cmFzJTIwdHJvcGljYWx8ZW58MXx8fHwxNzY5OTcwMjMyfDA&ixlib=rb-4.1.0&q=80&w=1080',
-        4.6,
-      ),
-      Destino(
-        'Centro Histórico',
-        'Cultura',
-        'https://images.unsplash.com/photo-1656186349076-01691a1018db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cm9waWNhbCUyMGZvcmVzdCUyMHdhdGVyZmFsbCUyMEhvbmR1cmFzfGVufDF8fHx8MTc2OTk3MDIzNnww&ixlib=rb-4.1.0&q=80&w=1080',
-        4.5,
-      ),
-      Destino(
-        'Ruinas de Copán',
-        'Arqueología',
-        'https://images.unsplash.com/photo-1635687202393-b7591bdaaafa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2xvbmlhbCUyMGFyY2hpdGVjdHVyZSUyMENlbnRyYWwlMjBBbWVyaWNhfGVufDF8fHx8MTc2OTk3MDIzNnww&ixlib=rb-4.1.0&q=80&w=1080',
-        4.8,
-      ),
-      Destino(
-        'Islas de la Bahía',
-        'Playas',
-        'https://images.unsplash.com/photo-1645512483786-42b653b0a923?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxUZWd1Y2lnYWxwYSUyMGNpdHklMjBIb25kdXJhc3xlbnwxfHx8fDE3Njk5NzAyMzN8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        4.9,
-      ),
-      Destino(
-        'Parque Nacional La Tigra',
-        'Naturaleza',
-        'https://images.unsplash.com/photo-1591551963955-9487b4973e84?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxDb3BhbiUyMHJ1aW5zJTIwSG9uZHVyYXMlMjBhcmNoYWVvbG9naWNhbHxlbnwxfHx8fDE3Njk5NzAyMzJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        4.6,
-      ),
-      Destino(
-        'Centro Histórico',
-        'Cultura',
-        'https://images.unsplash.com/photo-1600273970168-c3db62dcf905?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxSb2F0YW4lMjBiZWFjaCUyMEhvbmR1cmFzJTIwdHJvcGljYWx8ZW58MXx8fHwxNzY5OTcwMjMyfDA&ixlib=rb-4.1.0&q=80&w=1080',
-        4.5,
-      ),
-    ];
-
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -121,9 +53,7 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
                           Icons.shuffle,
                           color: theme.colorScheme.primary,
                         ),
-                        onPressed: () {
-                          // Lógica para destino aleatorio
-                        },
+                        onPressed: () {},
                       ),
                       IconButton(
                         icon: Icon(
@@ -146,16 +76,66 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
               ),
               const SizedBox(height: 5),
               Expanded(
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 15,
-                    mainAxisSpacing: 15,
-                    childAspectRatio: 0.8,
-                  ),
-                  itemCount: destinos.length,
-                  itemBuilder: (context, index) {
-                    return DestinoCard(destino: destinos[index]);
+                child: FutureBuilder<List<Destino>>(
+                  future: _destinosFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.wifi_off_outlined,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No se pudieron cargar los destinos',
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                            const SizedBox(height: 12),
+                            TextButton.icon(
+                              onPressed: () => setState(() {
+                                _destinosFuture =
+                                    DestinoService.obtenerDestinos();
+                              }),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Reintentar'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    final destinos = snapshot.data ?? [];
+
+                    if (destinos.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No hay destinos disponibles',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      );
+                    }
+
+                    return GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 15,
+                            mainAxisSpacing: 15,
+                            childAspectRatio: 0.8,
+                          ),
+                      itemCount: destinos.length,
+                      itemBuilder: (context, index) {
+                        return DestinoCard(destino: destinos[index]);
+                      },
+                    );
                   },
                 ),
               ),
@@ -163,7 +143,6 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
           ),
         ),
       ),
-      // Bottom Navigation Bar estilizada
       bottomNavigationBar: Container(
         margin: const EdgeInsets.fromLTRB(12, 5, 12, 30),
         decoration: BoxDecoration(
