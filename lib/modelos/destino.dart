@@ -13,7 +13,8 @@ class Destino {
   final String estado;
   final String? imagenprincipal;
   final List<String>? galeriaimagenes;
-  final String? tiempopromediovisita;
+  final int? tiempopromediovisita;
+  final int distanciacheckinpermitida;
   final bool esgratis;
 
   Destino({
@@ -32,6 +33,7 @@ class Destino {
     this.imagenprincipal,
     this.galeriaimagenes,
     this.tiempopromediovisita,
+    required this.distanciacheckinpermitida,
     required this.esgratis,
   });
 
@@ -54,6 +56,7 @@ class Destino {
           ? List<String>.from(json['galeriaimagenes'])
           : null,
       tiempopromediovisita: json['tiempopromediovisita'],
+      distanciacheckinpermitida: json['distanciaCheckinPermitida'] ?? 0,
       esgratis: json['esgratis'] ?? false,
     );
   }

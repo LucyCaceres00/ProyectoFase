@@ -1,10 +1,27 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Definimos los colores constantes
-  static const Color primaryColor = Color.fromARGB(255, 40, 69, 214); // Morado
-  static const Color secondaryColor = Color.fromARGB(255, 156, 207, 255); // Cian
+  // ── Colores principales ──
+  static const Color primaryColor = Color.fromARGB(255, 40, 69, 214);
+  static const Color secondaryColor = Color.fromARGB(255, 156, 207, 255);
+  static const Color surfaceColor = Color.fromARGB(255, 206, 221, 93);
   static const Color backgroundColor = Color(0xFFF5F5F5);
+
+  // ── Texto ──
+  static const Color textoOscuro = Color(0xFF1A1A2E);
+  static const Color textoSuave = Color(0xFF7B7B8F);
+
+  // ── Elementos UI ──
+  static const Color colorEstrella = Color(0xFFFFC107);
+  static const Color colorExito = Color(0xFF34C759);
+  static const Color colorBorde = Color(0xFFE8E8F0);
+  static const Color colorDivisor = Color(0xFFF0F0F5);
+  static const Color colorBordeChip = Color(0xFFE0E0E0);
+
+  // ── Mapa ──
+  static const Color colorGoogleMaps = Color(0xFF4285F4);
+  static const Color colorWaze = Color(0xFF00C0FF);
+  static const Color colorFondoMapa = Color(0xFFDDE8F5);
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -15,7 +32,6 @@ class AppTheme {
         secondary: secondaryColor,
         surface: const Color.fromARGB(255, 206, 221, 93),
       ),
-      // También puedes personalizar botones aquí
       appBarTheme: const AppBarTheme(
         backgroundColor: primaryColor,
         foregroundColor: Color.fromARGB(255, 135, 14, 14),

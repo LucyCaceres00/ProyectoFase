@@ -63,35 +63,39 @@ class DestinoCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.lightGreen.withValues(),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      destino.categoria,
-                      style: const TextStyle(
-                        color: Color.fromARGB(255, 255, 255, 255),
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Icon(Icons.star, color: Colors.yellow, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        destino.calificacionpromedio.toString(),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
                         ),
+                        decoration: BoxDecoration(
+                          color: Colors.lightGreen.withValues(),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          destino.categoria,
+                          style: const TextStyle(
+                            color: Color.fromARGB(255, 255, 255, 255),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          const Icon(Icons.star, color: Colors.yellow, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            destino.calificacionpromedio.toString(),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

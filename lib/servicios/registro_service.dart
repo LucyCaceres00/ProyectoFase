@@ -46,15 +46,10 @@ class RegistrarService {
     try {
       final response = await _apiService.post<Map<String, dynamic>>(
         'Authentication/login',
-        body: {
-          'Correo': correo,
-          'Contrasena': contrasena,
-        },
+        body: {'Correo': correo, 'Contrasena': contrasena},
         fromJson: (json) => json as Map<String, dynamic>,
       );
 
-      // Si el login es exitoso y hay un token, guardarlo
-      // El API devuelve Token con T mayúscula
       if (response.success && response.data?['Token'] != null) {
         _apiService.setToken(response.data!['Token']);
       }
@@ -65,12 +60,10 @@ class RegistrarService {
     }
   }
 
-  /// Guardar token manualmente
   void setToken(String token) {
     _apiService.setToken(token);
   }
 
-  /// Cerrar sesión
   void cerrarSesion() {
     _apiService.clearToken();
   }

@@ -25,7 +25,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _iniciarSesion() async {
-    // Validación básica
     if (_correoController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -62,7 +61,6 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       if (response.success) {
-        // Login exitoso
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -71,7 +69,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
 
-          // Navegar a la pantalla principal (ExplorarDestinosScreen)
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
@@ -81,7 +78,6 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } else {
-        // Error en el login
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
