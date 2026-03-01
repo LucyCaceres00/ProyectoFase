@@ -3,6 +3,7 @@ import '../../modelos/destino.dart';
 import '../../servicios/destino_service.dart';
 import '../inicio_sesion/inicio_sesion.dart';
 import 'destino_card.dart';
+import 'modal_destino_aleatorio.dart';
 
 class ExplorarDestinosScreen extends StatefulWidget {
   const ExplorarDestinosScreen({super.key});
@@ -16,6 +17,7 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
   late Future<List<Destino>> _destinosFuture;
   String? _categoriaSeleccionada;
   String? _departamentoSeleccionado;
+  List<Destino> _destinosCargados = [];
 
   @override
   void initState() {
@@ -55,7 +57,16 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
                           Icons.shuffle,
                           color: theme.colorScheme.primary,
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          if (_destinosCargados.length >= 2) {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              barrierColor: Colors.black87,
+                              builder: (_) => ModalDestinoAleatorio(destinos: _destinosCargados),
+                            );
+                          }
+                        },
                       ),
                       IconButton(
                         icon: Icon(
@@ -115,6 +126,7 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
                     }
 
                     final destinos = snapshot.data ?? [];
+                    _destinosCargados = destinos;
 
                     if (destinos.isEmpty) {
                       return Center(

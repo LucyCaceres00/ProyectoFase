@@ -9,6 +9,11 @@ class RegistrarService {
   factory RegistrarService() => _instance;
   RegistrarService._internal();
 
+  int? _usuarioId;
+
+  /// Obtener el usuarioId del usuario autenticado
+  int? get usuarioId => _usuarioId;
+
   Future<ApiResponse<Map<String, dynamic>>> registrarUsuario({
     required String nombre,
     required String correo,
@@ -50,8 +55,13 @@ class RegistrarService {
         fromJson: (json) => json as Map<String, dynamic>,
       );
 
-      if (response.success && response.data?['Token'] != null) {
-        _apiService.setToken(response.data!['Token']);
+      if (response.success && response.data != null) {
+        if (response.data!['Token'] != null) {
+          _apiService.setToken(response.data!['Token']);
+        }
+        if (response.data!['Id'] != null) {
+          _usuarioId = response.data!['Id'] as int;
+        }
       }
 
       return response;
@@ -66,6 +76,7 @@ class RegistrarService {
 
   void cerrarSesion() {
     _apiService.clearToken();
+    _usuarioId = null;
   }
 
   /// Obtener el token actual

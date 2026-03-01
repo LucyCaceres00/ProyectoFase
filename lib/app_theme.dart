@@ -4,7 +4,7 @@ class AppTheme {
   // ── Colores principales ──
   static const Color primaryColor = Color.fromARGB(255, 40, 69, 214);
   static const Color secondaryColor = Color.fromARGB(255, 156, 207, 255);
-  static const Color surfaceColor = Color.fromARGB(255, 206, 221, 93);
+  static const Color surfaceColor = Color.fromARGB(255, 139, 195, 74);
   static const Color backgroundColor = Color(0xFFF5F5F5);
 
   // ── Texto ──
@@ -13,7 +13,6 @@ class AppTheme {
 
   // ── Elementos UI ──
   static const Color colorEstrella = Color(0xFFFFC107);
-  static const Color colorExito = Color(0xFF34C759);
   static const Color colorBorde = Color(0xFFE8E8F0);
   static const Color colorDivisor = Color(0xFFF0F0F5);
   static const Color colorBordeChip = Color(0xFFE0E0E0);

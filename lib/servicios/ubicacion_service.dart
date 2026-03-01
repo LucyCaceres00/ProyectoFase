@@ -5,8 +5,16 @@ class ResultadoUbicacion {
   final bool permitido;
   final double distancia;
   final String? error;
+  final double? latitud;
+  final double? longitud;
 
-  ResultadoUbicacion({required this.permitido, this.distancia = 0, this.error});
+  ResultadoUbicacion({
+    required this.permitido,
+    this.distancia = 0,
+    this.error,
+    this.latitud,
+    this.longitud,
+  });
 }
 
 class UbicacionService {
@@ -57,6 +65,8 @@ class UbicacionService {
     return ResultadoUbicacion(
       permitido: permitido,
       distancia: distancia,
+      latitud: posicion.latitude,
+      longitud: posicion.longitude,
     );
   }
 }

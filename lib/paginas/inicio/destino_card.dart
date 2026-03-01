@@ -72,7 +72,7 @@ class DestinoCard extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.lightGreen.withValues(),
+                          color: const Color.fromRGBO(139, 195, 74, 1).withValues(),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(

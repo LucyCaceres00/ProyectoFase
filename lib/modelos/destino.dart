@@ -1,3 +1,6 @@
+import 'horario_destino.dart';
+import 'tarifa_destino.dart';
+
 class Destino {
   final int destinoid;
   final String nombre;
@@ -16,6 +19,8 @@ class Destino {
   final int? tiempopromediovisita;
   final int distanciacheckinpermitida;
   final bool esgratis;
+  final List<HorarioDestino>? horariosDestino;
+  final List<TarifaDestino>? tarifasDestino;
 
   Destino({
     required this.destinoid,
@@ -35,6 +40,8 @@ class Destino {
     this.tiempopromediovisita,
     required this.distanciacheckinpermitida,
     required this.esgratis,
+    this.horariosDestino,
+    this.tarifasDestino,
   });
 
   factory Destino.fromJson(Map<String, dynamic> json) {
@@ -58,6 +65,16 @@ class Destino {
       tiempopromediovisita: json['tiempopromediovisita'],
       distanciacheckinpermitida: json['distanciaCheckinPermitida'] ?? 0,
       esgratis: json['esgratis'] ?? false,
+      horariosDestino: json['horariosDestino'] != null
+          ? (json['horariosDestino'] as List)
+              .map((h) => HorarioDestino.fromJson(h))
+              .toList()
+          : null,
+      tarifasDestino: json['tarifasDestino'] != null
+          ? (json['tarifasDestino'] as List)
+              .map((t) => TarifaDestino.fromJson(t))
+              .toList()
+          : null,
     );
   }
 }
