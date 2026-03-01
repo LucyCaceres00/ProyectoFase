@@ -62,13 +62,20 @@ class _CheckinDestinoState extends State<CheckinDestino> {
     );
 
     try {
-      final resultado = await UbicacionService.verificarCercania(widget.destino);
+      final resultado = await UbicacionService.verificarCercania(
+        widget.destino,
+      );
 
       if (!mounted) return;
       Navigator.pop(context);
 
       if (resultado.error != null) {
-        AppDialogo.mostrar(context, icono: Icons.location_off_outlined, titulo: 'Ubicación requerida', mensaje: resultado.error!);
+        AppDialogo.mostrar(
+          context,
+          icono: Icons.location_off_outlined,
+          titulo: 'Ubicación requerida',
+          mensaje: resultado.error!,
+        );
         return;
       }
 
@@ -79,7 +86,8 @@ class _CheckinDestinoState extends State<CheckinDestino> {
           context,
           icono: Icons.location_off_outlined,
           titulo: 'Fuera de rango',
-          mensaje: 'Actualmente se encuentra fuera de la distancia permitida para registrar la visita a ${widget.destino.nombre}, intente nuevamente al estar más cerca.',
+          mensaje:
+              'Actualmente se encuentra fuera de la distancia permitida para registrar la visita a ${widget.destino.nombre}, intente nuevamente al estar más cerca.',
         );
       }
     } catch (e) {
@@ -87,15 +95,25 @@ class _CheckinDestinoState extends State<CheckinDestino> {
       Navigator.pop(context);
 
       String mensaje;
-      if (e.toString().contains('permission') || e.toString().contains('Permission')) {
-        mensaje = 'Se necesita permiso de ubicación para hacer check-in. Habilítelo desde la configuración del dispositivo.';
-      } else if (e.toString().contains('location service') || e.toString().contains('LocationService')) {
-        mensaje = 'El servicio de ubicación está desactivado. Actívelo para continuar.';
+      if (e.toString().contains('permission') ||
+          e.toString().contains('Permission')) {
+        mensaje =
+            'Se necesita permiso de ubicación para hacer check-in. Habilítelo desde la configuración del dispositivo.';
+      } else if (e.toString().contains('location service') ||
+          e.toString().contains('LocationService')) {
+        mensaje =
+            'El servicio de ubicación está desactivado. Actívelo para continuar.';
       } else {
-        mensaje = 'No se pudo obtener la ubicación. Verifique que el GPS esté activado y los permisos otorgados, luego intente nuevamente.';
+        mensaje =
+            'No se pudo obtener la ubicación. Verifique que el GPS esté activado y los permisos otorgados, luego intente nuevamente.';
       }
 
-      AppDialogo.mostrar(context, icono: Icons.error_outline, titulo: 'Error', mensaje: mensaje);
+      AppDialogo.mostrar(
+        context,
+        icono: Icons.error_outline,
+        titulo: 'Error',
+        mensaje: mensaje,
+      );
     }
   }
 
@@ -104,15 +122,25 @@ class _CheckinDestinoState extends State<CheckinDestino> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        icon: const Icon(Icons.location_on, size: 48, color: AppTheme.primaryColor),
-        title: const Text('Confirmar visita', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+        icon: const Icon(
+          Icons.location_on,
+          size: 48,
+          color: AppTheme.primaryColor,
+        ),
+        title: const Text(
+          'Confirmar visita',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+        ),
         content: Text(
           'Tu ubicación está dentro de la distancia válida para hacer check-in en ${widget.destino.nombre}.',
           textAlign: TextAlign.center,
           style: const TextStyle(fontSize: 18, height: 1.5),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar', style: TextStyle(fontSize: 16))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar', style: TextStyle(fontSize: 16)),
+          ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
@@ -121,9 +149,14 @@ class _CheckinDestinoState extends State<CheckinDestino> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryColor,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: const Text('Confirmar visita', style: TextStyle(fontSize: 16)),
+            child: const Text(
+              'Confirmar visita',
+              style: TextStyle(fontSize: 16),
+            ),
           ),
         ],
       ),
@@ -158,13 +191,16 @@ class _CheckinDestinoState extends State<CheckinDestino> {
       AppDialogo.mostrarExito(
         context,
         titulo: '¡Visita registrada!',
-        mensaje: 'Tu visita a ${widget.destino.nombre} fue registrada. ¡Comparte tu experiencia escribiendo una reseña!',
+        mensaje:
+            'Tu visita a ${widget.destino.nombre} fue registrada. ¡Comparte tu experiencia escribiendo una reseña!',
       );
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context);
 
-      final esNoAutorizado = e.toString().contains('No autorizado') || e.toString().contains('sesión');
+      final esNoAutorizado =
+          e.toString().contains('No autorizado') ||
+          e.toString().contains('sesión');
 
       AppDialogo.mostrar(
         context,
@@ -194,7 +230,12 @@ class _CheckinDestinoState extends State<CheckinDestino> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        MediaQuery.of(context).padding.bottom + 12,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -211,8 +252,8 @@ class _CheckinDestinoState extends State<CheckinDestino> {
         child: _cargando
             ? const Center(child: CircularProgressIndicator())
             : _estadoVisita?.tieneVisitaPendiente == true
-                ? _botonResena()
-                : _botonCheckin(),
+            ? _botonResena()
+            : _botonCheckin(),
       ),
     );
   }
@@ -231,7 +272,10 @@ class _CheckinDestinoState extends State<CheckinDestino> {
         children: [
           Icon(Icons.check_circle_outline, size: 20),
           SizedBox(width: 8),
-          Text('Hacer Check-in', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          Text(
+            'Hacer Check-in',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
         ],
       ),
     );
@@ -249,9 +293,10 @@ class _CheckinDestinoState extends State<CheckinDestino> {
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.star_outline_rounded, size: 20),
-          SizedBox(width: 8),
-          Text('Escribir Reseña', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          Text(
+            'Escribir Reseña',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
         ],
       ),
     );

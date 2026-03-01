@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../app_theme.dart';
 import '../../modelos/destino.dart';
 import '../../servicios/destino_service.dart';
 import '../inicio_sesion/inicio_sesion.dart';
+import '../perfil/perfil_screen.dart';
+import '../ranking/ranking_screen.dart';
 import 'destino_card.dart';
 import 'modal_destino_aleatorio.dart';
 
@@ -25,6 +28,13 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
     _destinosFuture = DestinoService.obtenerDestinos();
   }
 
+  Future<void> _refrescarDestinos() async {
+    setState(() {
+      _destinosFuture = DestinoService.obtenerDestinos();
+    });
+    await _destinosFuture;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -32,8 +42,103 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          _pantallaInicio(theme),
+          const RankingScreen(),
+          const PerfilScreen(),
+        ],
+      ),
+      bottomNavigationBar: _navBar(theme),
+    );
+  }
+
+  Widget _navBar(ThemeData theme) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 5, 12, 30),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary,
+        borderRadius: BorderRadius.circular(40),
+      ),
+      child: SizedBox(
+        height: 60,
+        child: BottomNavigationBar(
+          backgroundColor: const Color.fromARGB(0, 99, 4, 4),
+          elevation: 0,
+          currentIndex: _selectedIndex,
+          onTap: (index) => setState(() => _selectedIndex = index),
+          selectedItemColor: const Color.fromARGB(255, 180, 29, 29),
+          unselectedItemColor: Colors.white,
+          showSelectedLabels: false,
+          items: [
+            BottomNavigationBarItem(
+              label: 'Inicio',
+              icon: const Icon(Icons.home_filled),
+              activeIcon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                child: Icon(Icons.home_filled, color: theme.colorScheme.primary),
+              ),
+            ),
+            BottomNavigationBarItem(
+              label: 'Ranking',
+              icon: const Icon(Icons.workspace_premium_outlined),
+              activeIcon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                child: Icon(Icons.workspace_premium_outlined, color: theme.colorScheme.primary),
+              ),
+            ),
+            BottomNavigationBarItem(
+              label: 'Perfil',
+              icon: const Icon(Icons.person_outline),
+              activeIcon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                child: Icon(Icons.person_outline, color: theme.colorScheme.primary),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _filtroDropdown<T>({
+    required T? value,
+    required String hint,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T?> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppTheme.primaryColor),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DropdownButton<T>(
+        value: value,
+        hint: Text(
+          hint,
+          style: const TextStyle(fontSize: 13, color: AppTheme.primaryColor),
+        ),
+        isExpanded: true,
+        underline: const SizedBox(),
+        isDense: true,
+        dropdownColor: Colors.white,
+        iconEnabledColor:  AppTheme.primaryColor,
+        style: const TextStyle(fontSize: 13, color: AppTheme.primaryColor),
+        items: items,
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  Widget _pantallaInicio(ThemeData theme) {
+    return SafeArea(
+      child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,6 +172,13 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
                             );
                           }
                         },
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.refresh_rounded,
+                          color: theme.colorScheme.primary,
+                        ),
+                        onPressed: _refrescarDestinos,
                       ),
                       IconButton(
                         icon: Icon(
@@ -153,51 +265,33 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
                           children: [
                             // DDL Categoría
                             Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  border: Border.all(color: Colors.grey[400]!),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: DropdownButton<String>(
-                                  value: _categoriaSeleccionada,
-                                  hint: const Text('Categoría', style: TextStyle(fontSize: 13)),
-                                  isExpanded: true,
-                                  underline: const SizedBox(),
-                                  isDense: true,
-                                  style: TextStyle(fontSize: 13, color: Colors.grey[800]),
-                                  items: [
-                                    const DropdownMenuItem<String>(value: null, child: Text('Todas')),
-                                    ...categorias.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))),
-                                  ],
-                                  onChanged: (value) => setState(() => _categoriaSeleccionada = value),
-                                ),
+                              child: _filtroDropdown<String>(
+                                value: _categoriaSeleccionada,
+                                hint: 'Categoría',
+                                items: [
+                                  const DropdownMenuItem<String>(
+                                    value: null,
+                                    child: Text('Todas'),
+                                  ),
+                                  ...categorias.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))),
+                                ],
+                                onChanged: (value) => setState(() => _categoriaSeleccionada = value),
                               ),
                             ),
                             const SizedBox(width: 10),
                             // DDL Departamento
                             Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  border: Border.all(color: Colors.grey[400]!),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: DropdownButton<String>(
-                                  value: _departamentoSeleccionado,
-                                  hint: const Text('Departamento', style: TextStyle(fontSize: 13)),
-                                  isExpanded: true,
-                                  underline: const SizedBox(),
-                                  isDense: true,
-                                  style: TextStyle(fontSize: 13, color: Colors.grey[800]),
-                                  items: [
-                                    const DropdownMenuItem<String>(value: null, child: Text('Todos')),
-                                    ...departamentos.map((dep) => DropdownMenuItem(value: dep, child: Text(dep))),
-                                  ],
-                                  onChanged: (value) => setState(() => _departamentoSeleccionado = value),
-                                ),
+                              child: _filtroDropdown<String>(
+                                value: _departamentoSeleccionado,
+                                hint: 'Departamento',
+                                items: [
+                                  const DropdownMenuItem<String>(
+                                    value: null,
+                                    child: Text('Todos'),
+                                  ),
+                                  ...departamentos.map((dep) => DropdownMenuItem(value: dep, child: Text(dep))),
+                                ],
+                                onChanged: (value) => setState(() => _departamentoSeleccionado = value),
                               ),
                             ),
                           ],
@@ -234,73 +328,6 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.fromLTRB(12, 5, 12, 30),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.primary,
-          borderRadius: BorderRadius.circular(40),
-        ),
-        child: SizedBox(
-          height: 60,
-          child: BottomNavigationBar(
-            backgroundColor: const Color.fromARGB(0, 99, 4, 4),
-            elevation: 0,
-            currentIndex: _selectedIndex,
-            onTap: (index) => setState(() => _selectedIndex = index),
-            selectedItemColor: const Color.fromARGB(255, 180, 29, 29),
-            unselectedItemColor: Colors.white,
-            showSelectedLabels: false,
-            items: [
-              BottomNavigationBarItem(
-                label: 'Inicio',
-                icon: const Icon(Icons.home_filled),
-                activeIcon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.home_filled,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-              BottomNavigationBarItem(
-                label: 'Ranking',
-                icon: const Icon(Icons.workspace_premium_outlined),
-                activeIcon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.workspace_premium_outlined,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-              BottomNavigationBarItem(
-                label: 'Perfil',
-                icon: const Icon(Icons.person_outline),
-                activeIcon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.person_outline,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

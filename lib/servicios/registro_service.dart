@@ -10,9 +10,17 @@ class RegistrarService {
   RegistrarService._internal();
 
   int? _usuarioId;
+  String? _nombre;
+  String? _correo;
+  String? _nivelExplorador;
+  int? _turiPuntos;
 
   /// Obtener el usuarioId del usuario autenticado
   int? get usuarioId => _usuarioId;
+  String? get nombre => _nombre;
+  String? get correo => _correo;
+  String? get nivelExplorador => _nivelExplorador;
+  int? get turiPuntos => _turiPuntos;
 
   Future<ApiResponse<Map<String, dynamic>>> registrarUsuario({
     required String nombre,
@@ -56,11 +64,18 @@ class RegistrarService {
       );
 
       if (response.success && response.data != null) {
-        if (response.data!['Token'] != null) {
-          _apiService.setToken(response.data!['Token']);
+        final data = response.data!;
+        if (data['Token'] != null) {
+          _apiService.setToken(data['Token']);
         }
-        if (response.data!['Id'] != null) {
-          _usuarioId = response.data!['Id'] as int;
+        if (data['Id'] != null) {
+          _usuarioId = data['Id'] as int;
+        }
+        _nombre = data['Nombre'] as String?;
+        _correo = data['Correo'] as String?;
+        _nivelExplorador = data['NivelExplorador'] as String?;
+        if (data['TuriPuntos'] != null) {
+          _turiPuntos = (data['TuriPuntos'] as num).toInt();
         }
       }
 
@@ -77,6 +92,10 @@ class RegistrarService {
   void cerrarSesion() {
     _apiService.clearToken();
     _usuarioId = null;
+    _nombre = null;
+    _correo = null;
+    _nivelExplorador = null;
+    _turiPuntos = null;
   }
 
   /// Obtener el token actual
