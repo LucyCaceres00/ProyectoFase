@@ -6,6 +6,13 @@ class IdentidadDestino extends StatelessWidget {
   final Destino destino;
   const IdentidadDestino({super.key, required this.destino});
 
+  String _formatVisitas(int visitas) {
+    if (visitas >= 1000) {
+      return '+${(visitas / 1000).floor()}K';
+    }
+    return visitas.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -42,8 +49,8 @@ class IdentidadDestino extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                const Text(
-                  '(1.2k visitas)',
+                Text(
+                 _formatVisitas(destino.totalvisitas),
                   style: TextStyle(color: AppTheme.textoSuave, fontSize: 12),
                 ),
               ],

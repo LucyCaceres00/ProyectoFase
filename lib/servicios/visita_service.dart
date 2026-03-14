@@ -76,7 +76,7 @@ class VisitaService {
     final token = RegistrarService().token;
     if (token == null) {
       final pendienteCache = await leerCachePendiente(usuarioId, destinoId);
-      return EstadoVisita(tieneVisitaPendiente: pendienteCache);
+      return EstadoVisita(tieneReseniaPendiente: pendienteCache);
     }
 
     try {
@@ -98,7 +98,7 @@ class VisitaService {
             responseBody.data as Map<String, dynamic>,
           );
           // Sincronizar cache con respuesta del API
-          await guardarCachePendiente(usuarioId, destinoId, estado.tieneVisitaPendiente);
+          await guardarCachePendiente(usuarioId, destinoId, estado.tieneReseniaPendiente);
           return estado;
         }
       }
@@ -107,6 +107,6 @@ class VisitaService {
     }
 
     final pendienteCache = await leerCachePendiente(usuarioId, destinoId);
-    return EstadoVisita(tieneVisitaPendiente: pendienteCache);
+    return EstadoVisita(tieneReseniaPendiente: pendienteCache);
   }
 }

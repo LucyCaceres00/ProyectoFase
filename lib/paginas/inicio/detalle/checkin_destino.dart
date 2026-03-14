@@ -30,28 +30,24 @@ class _CheckinDestinoState extends State<CheckinDestino> {
     setState(() => _cargando = true);
     final usuarioId = RegistrarService().usuarioId ?? 0;
 
-    // 1. Leer cache local primero (instantáneo, sin red)
     final pendienteCache = await VisitaService.leerCachePendiente(
       usuarioId,
       widget.destino.destinoid,
     );
     if (mounted) {
       setState(() {
-        _estadoVisita = EstadoVisita(tieneVisitaPendiente: pendienteCache);
+        _estadoVisita = EstadoVisita(tieneReseniaPendiente: pendienteCache);
         _cargando = false;
       });
     }
 
-    // 2. Actualizar desde el API en segundo plano (sincroniza el cache)
     try {
       final estado = await VisitaService.obtenerEstadoVisita(
         usuarioId: usuarioId,
         destinoId: widget.destino.destinoid,
       );
       if (mounted) setState(() => _estadoVisita = estado);
-    } catch (_) {
-      // El cache local ya fue mostrado, no hacer nada
-    }
+    } catch (_) {}
   }
 
   Future<void> _hacerCheckin() async {
@@ -183,9 +179,8 @@ class _CheckinDestinoState extends State<CheckinDestino> {
       if (!mounted) return;
       Navigator.pop(context);
 
-      // Actualizar el estado: ahora tiene visita pendiente de reseña
       setState(() {
-        _estadoVisita = EstadoVisita(tieneVisitaPendiente: true);
+        _estadoVisita = EstadoVisita(tieneReseniaPendiente: true);
       });
 
       AppDialogo.mostrarExito(
@@ -219,10 +214,9 @@ class _CheckinDestinoState extends State<CheckinDestino> {
       MaterialPageRoute(builder: (_) => ResenaScreen(destino: widget.destino)),
     );
 
-    // Si guardó la reseña, volver a mostrar el botón de check-in
     if (resenaGuardada == true && mounted) {
       setState(() {
-        _estadoVisita = EstadoVisita(tieneVisitaPendiente: false);
+        _estadoVisita = EstadoVisita(tieneReseniaPendiente: false);
       });
     }
   }
@@ -251,7 +245,7 @@ class _CheckinDestinoState extends State<CheckinDestino> {
         height: 52,
         child: _cargando
             ? const Center(child: CircularProgressIndicator())
-            : _estadoVisita?.tieneVisitaPendiente == true
+            : _estadoVisita?.tieneReseniaPendiente == true
             ? _botonResena()
             : _botonCheckin(),
       ),

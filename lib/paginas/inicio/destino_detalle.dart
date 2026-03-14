@@ -3,7 +3,6 @@ import '../../app_theme.dart';
 import '../../modelos/destino.dart';
 import 'detalle/encabezado_destino.dart';
 import 'detalle/identidad_destino.dart';
-import 'detalle/chips_planificacion.dart';
 import 'detalle/descripcion_destino.dart';
 import 'detalle/horarios_destino.dart';
 import 'detalle/tarifas_destino.dart';
@@ -39,8 +38,6 @@ class DestinoDetalleScreen extends StatelessWidget {
                       children: [
                         const SizedBox(height: 20),
                         IdentidadDestino(destino: destino),
-                        const SizedBox(height: 20),
-                        const ChipsPlanificacion(),
                         const SizedBox(height: 24),
                         _divisor(),
                         const SizedBox(height: 24),

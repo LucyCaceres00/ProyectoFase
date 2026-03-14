@@ -282,7 +282,7 @@ class PerfilScreen extends StatelessWidget {
       height: 1,
       indent: 68,
       endIndent: 0,
-      color: AppTheme.colorDivisor,
+      color: AppTheme.colorBorde,
     );
   }
 

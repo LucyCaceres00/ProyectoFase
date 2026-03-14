@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../app_theme.dart';
 import '../../modelos/destino.dart';
 import '../../modelos/resena.dart';
@@ -22,6 +24,8 @@ class _ResenaScreenState extends State<ResenaScreen> {
   int _servicio = 0;
   final _comentarioCtrl = TextEditingController();
   bool _enviando = false;
+  final List<XFile> _imagenes = [];
+  final _picker = ImagePicker();
 
   @override
   void dispose() {
@@ -30,6 +34,55 @@ class _ResenaScreenState extends State<ResenaScreen> {
   }
 
   bool get _formularioValido => _acceso > 0 && _estadoLugar > 0;
+
+  Future<void> _seleccionarImagenes(ImageSource fuente) async {
+    if (fuente == ImageSource.gallery) {
+      final picked = await _picker.pickMultiImage(imageQuality: 80, limit: 5);
+      if (picked.isNotEmpty) {
+        setState(() {
+          final restantes = 5 - _imagenes.length;
+          _imagenes.addAll(picked.take(restantes));
+        });
+      }
+    } else {
+      final picked = await _picker.pickImage(source: fuente, imageQuality: 80);
+      if (picked != null && _imagenes.length < 5) {
+        setState(() => _imagenes.add(picked));
+      }
+    }
+  }
+
+  void _mostrarOpcionesImagen() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.colorBorde, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded, color: AppTheme.primaryColor),
+                title: const Text('Elegir de la galería'),
+                onTap: () { Navigator.pop(context); _seleccionarImagenes(ImageSource.gallery); },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded, color: AppTheme.primaryColor),
+                title: const Text('Tomar una foto'),
+                onTap: () { Navigator.pop(context); _seleccionarImagenes(ImageSource.camera); },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<void> _enviarResena() async {
     if (!_formularioValido) {
@@ -57,6 +110,7 @@ class _ResenaScreenState extends State<ResenaScreen> {
           puntuacionServicio: _servicio > 0 ? _servicio : null,
           comentario: _comentarioCtrl.text.trim(),
         ),
+        imagenes: _imagenes,
       );
 
       // Limpiar cache: ya puede hacer otro check-in
@@ -170,6 +224,18 @@ class _ResenaScreenState extends State<ResenaScreen> {
 
                   const SizedBox(height: 28),
 
+                  // ── Imágenes ─────────────────────────────────────────────
+                  _seccionTitulo('Fotos'),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Opcional — máximo 5 fotos',
+                    style: TextStyle(fontSize: 12, color: AppTheme.textoSuave),
+                  ),
+                  const SizedBox(height: 12),
+                  _seccionImagenes(),
+
+                  const SizedBox(height: 28),
+
                   // ── Comentario ───────────────────────────────────────────
                   _seccionTitulo('Comentario'),
                   const SizedBox(height: 4),
@@ -256,6 +322,75 @@ class _ResenaScreenState extends State<ResenaScreen> {
   }
 
   // ── Widgets auxiliares ──────────────────────────────────────────────────────
+
+  Widget _seccionImagenes() {
+    return SizedBox(
+      height: 100,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          // Botón agregar
+          if (_imagenes.length < 5)
+            GestureDetector(
+              onTap: _mostrarOpcionesImagen,
+              child: Container(
+                width: 100,
+                height: 100,
+                margin: const EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F8FC),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppTheme.colorBorde, style: BorderStyle.solid),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add_photo_alternate_rounded, color: AppTheme.primaryColor, size: 28),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${_imagenes.length}/5',
+                      style: const TextStyle(fontSize: 11, color: AppTheme.textoSuave),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          // Miniaturas seleccionadas
+          ..._imagenes.asMap().entries.map((entry) {
+            final i = entry.key;
+            final img = entry.value;
+            return Stack(
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  margin: const EdgeInsets.only(right: 10),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(14)),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.file(File(img.path), fit: BoxFit.cover),
+                  ),
+                ),
+                Positioned(
+                  top: 4,
+                  right: 14,
+                  child: GestureDetector(
+                    onTap: () => setState(() => _imagenes.removeAt(i)),
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                      child: const Icon(Icons.close_rounded, color: Colors.white, size: 14),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
 
   Widget _encabezadoDestino() {
     return Container(

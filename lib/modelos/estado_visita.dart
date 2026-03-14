@@ -1,15 +1,15 @@
 class EstadoVisita {
-  final bool tieneVisitaPendiente; // visitó pero aún no escribió reseña
+  final bool tieneReseniaPendiente;
   final int? visitaId;
 
   EstadoVisita({
-    required this.tieneVisitaPendiente,
+    required this.tieneReseniaPendiente,
     this.visitaId,
   });
 
   factory EstadoVisita.fromJson(Map<String, dynamic> json) {
     return EstadoVisita(
-      tieneVisitaPendiente: json['tieneVisitaPendiente'] ?? false,
+      tieneReseniaPendiente: json['tieneReseniaPendiente'] ?? false,
       visitaId: json['visitaId'],
     );
   }

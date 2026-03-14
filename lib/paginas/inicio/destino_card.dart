@@ -31,7 +31,6 @@ class DestinoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Imagen
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -47,7 +46,6 @@ class DestinoCard extends StatelessWidget {
                 ),
               ),
             ),
-            // Detalles
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(

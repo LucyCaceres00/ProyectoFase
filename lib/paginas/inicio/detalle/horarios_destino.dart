@@ -97,7 +97,6 @@ class HorariosDestino extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        // Horarios de toda la semana
         ExpansionTile(
           tilePadding: const EdgeInsets.symmetric(horizontal: 12),
           title: const Text(

@@ -26,11 +26,10 @@ class RankingUsuario {
   factory RankingUsuario.fromJson(Map<String, dynamic> json) {
     return RankingUsuario(
       posicion: json['posicion'] ?? 0,
-      usuarioId: json['usuarioId'] ?? json['UsuarioId'] ?? 0,
-      nombre: json['nombre'] ?? json['Nombre'] ?? '',
-      turiPuntos: json['turiPuntos'] ?? json['TuriPuntos'] ?? 0,
-      totalVisitas: json['totalVisitas'] ?? json['TotalVisitas'] ?? 0,
-      foto: json['foto'] ?? json['Foto'],
+      usuarioId: 0,
+      nombre: json['usuario'] ?? '',
+      turiPuntos: (json['totalPuntos'] as num).toInt(),
+      totalVisitas: json['totalVisitas'] as int,
     );
   }
 }

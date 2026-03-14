@@ -48,7 +48,6 @@ class _ModalDestinoAleatorioState extends State<ModalDestinoAleatorio>
 
   void _siguientePaso() {
     if (_pasos >= _totalPasos) {
-      // Último paso: mostrar el ganador
       setState(() {
         _indiceActual = _indiceGanador;
         _finalizado = true;
@@ -57,7 +56,6 @@ class _ModalDestinoAleatorioState extends State<ModalDestinoAleatorio>
       return;
     }
 
-    // Calcular delay: empieza rápido y desacelera
     final progreso = _pasos / _totalPasos;
     final delay = (50 + (progreso * progreso * 400)).toInt();
 
@@ -94,7 +92,6 @@ class _ModalDestinoAleatorioState extends State<ModalDestinoAleatorio>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Título
             Text(
               _finalizado ? 'Tu destino es...' : 'Buscando destino...',
               style: TextStyle(
@@ -104,16 +101,19 @@ class _ModalDestinoAleatorioState extends State<ModalDestinoAleatorio>
               ),
             ),
             const SizedBox(height: 20),
-            // Imagen con efecto
             ScaleTransition(
-              scale: _finalizado ? _animacionEscala : const AlwaysStoppedAnimation(1.0),
+              scale: _finalizado
+                  ? _animacionEscala
+                  : const AlwaysStoppedAnimation(1.0),
               child: Container(
                 height: 200,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: _finalizado ? AppTheme.surfaceColor : Colors.grey[300]!,
+                    color: _finalizado
+                        ? AppTheme.surfaceColor
+                        : Colors.grey[300]!,
                     width: _finalizado ? 3 : 1,
                   ),
                   boxShadow: _finalizado
@@ -134,18 +134,25 @@ class _ModalDestinoAleatorioState extends State<ModalDestinoAleatorio>
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Container(
                             color: Colors.grey[200],
-                            child: const Icon(Icons.image_not_supported, size: 48, color: Colors.grey),
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              size: 48,
+                              color: Colors.grey,
+                            ),
                           ),
                         )
                       : Container(
                           color: Colors.grey[200],
-                          child: const Icon(Icons.image_not_supported, size: 48, color: Colors.grey),
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 48,
+                            color: Colors.grey,
+                          ),
                         ),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            // Nombre del destino
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 150),
               child: Text(
@@ -163,10 +170,7 @@ class _ModalDestinoAleatorioState extends State<ModalDestinoAleatorio>
               const SizedBox(height: 8),
               Text(
                 '${_destinoActual.municipio}, ${_destinoActual.departamento}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.textoSuave,
-                ),
+                style: TextStyle(fontSize: 14, color: AppTheme.textoSuave),
               ),
               const SizedBox(height: 20),
               SizedBox(
@@ -178,7 +182,8 @@ class _ModalDestinoAleatorioState extends State<ModalDestinoAleatorio>
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => DestinoDetalleScreen(destino: _destinoActual),
+                        builder: (_) =>
+                            DestinoDetalleScreen(destino: _destinoActual),
                       ),
                     );
                   },

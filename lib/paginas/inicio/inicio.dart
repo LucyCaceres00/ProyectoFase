@@ -77,8 +77,14 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
               icon: const Icon(Icons.home_filled),
               activeIcon: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                child: Icon(Icons.home_filled, color: theme.colorScheme.primary),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.home_filled,
+                  color: theme.colorScheme.primary,
+                ),
               ),
             ),
             BottomNavigationBarItem(
@@ -86,8 +92,14 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
               icon: const Icon(Icons.workspace_premium_outlined),
               activeIcon: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                child: Icon(Icons.workspace_premium_outlined, color: theme.colorScheme.primary),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.workspace_premium_outlined,
+                  color: theme.colorScheme.primary,
+                ),
               ),
             ),
             BottomNavigationBarItem(
@@ -95,8 +107,14 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
               icon: const Icon(Icons.person_outline),
               activeIcon: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                child: Icon(Icons.person_outline, color: theme.colorScheme.primary),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.person_outline,
+                  color: theme.colorScheme.primary,
+                ),
               ),
             ),
           ],
@@ -128,7 +146,7 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
         underline: const SizedBox(),
         isDense: true,
         dropdownColor: Colors.white,
-        iconEnabledColor:  AppTheme.primaryColor,
+        iconEnabledColor: AppTheme.primaryColor,
         style: const TextStyle(fontSize: 13, color: AppTheme.primaryColor),
         items: items,
         onChanged: onChanged,
@@ -139,195 +157,218 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
   Widget _pantallaInicio(ThemeData theme) {
     return SafeArea(
       child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Explorar destinos',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
-                    ),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Explorar destinos',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
                   ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.shuffle,
-                          color: theme.colorScheme.primary,
-                        ),
-                        onPressed: () {
-                          if (_destinosCargados.length >= 2) {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              barrierColor: Colors.black87,
-                              builder: (_) => ModalDestinoAleatorio(destinos: _destinosCargados),
-                            );
-                          }
-                        },
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.shuffle,
+                        color: theme.colorScheme.primary,
                       ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.refresh_rounded,
-                          color: theme.colorScheme.primary,
-                        ),
-                        onPressed: _refrescarDestinos,
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.logout_outlined,
-                          color: theme.colorScheme.primary,
-                        ),
-                        onPressed: () {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginScreen(),
+                      onPressed: () {
+                        if (_destinosCargados.length >= 2) {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            barrierColor: Colors.black87,
+                            builder: (_) => ModalDestinoAleatorio(
+                              destinos: _destinosCargados,
                             ),
-                            (route) => false,
                           );
-                        },
+                        }
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.refresh_rounded,
+                        color: theme.colorScheme.primary,
+                      ),
+                      onPressed: _refrescarDestinos,
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.logout_outlined,
+                        color: theme.colorScheme.primary,
+                      ),
+                      onPressed: () {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
+                          (route) => false,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            Expanded(
+              child: FutureBuilder<List<Destino>>(
+                future: _destinosFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.wifi_off_outlined,
+                            size: 48,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No se pudieron cargar los destinos',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 12),
+                          TextButton.icon(
+                            onPressed: () => setState(() {
+                              _destinosFuture =
+                                  DestinoService.obtenerDestinos();
+                            }),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Reintentar'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  final destinos = snapshot.data ?? [];
+                  _destinosCargados = destinos;
+
+                  if (destinos.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No hay destinos disponibles',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    );
+                  }
+
+                  final categorias = destinos
+                      .map((d) => d.categoria)
+                      .toSet()
+                      .toList();
+                  final departamentos = destinos
+                      .map((d) => d.departamento)
+                      .toSet()
+                      .toList();
+
+                  final filtrados = destinos.where((d) {
+                    if (_categoriaSeleccionada != null &&
+                        d.categoria != _categoriaSeleccionada)
+                      return false;
+                    if (_departamentoSeleccionado != null &&
+                        d.departamento != _departamentoSeleccionado)
+                      return false;
+                    return true;
+                  }).toList();
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _filtroDropdown<String>(
+                              value: _categoriaSeleccionada,
+                              hint: 'Categoría',
+                              items: [
+                                const DropdownMenuItem<String>(
+                                  value: null,
+                                  child: Text('Todas'),
+                                ),
+                                ...categorias.map(
+                                  (cat) => DropdownMenuItem(
+                                    value: cat,
+                                    child: Text(cat),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (value) => setState(
+                                () => _categoriaSeleccionada = value,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _filtroDropdown<String>(
+                              value: _departamentoSeleccionado,
+                              hint: 'Departamento',
+                              items: [
+                                const DropdownMenuItem<String>(
+                                  value: null,
+                                  child: Text('Todos'),
+                                ),
+                                ...departamentos.map(
+                                  (dep) => DropdownMenuItem(
+                                    value: dep,
+                                    child: Text(dep),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (value) => setState(
+                                () => _departamentoSeleccionado = value,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: filtrados.isEmpty
+                            ? Center(
+                                child: Text(
+                                  'No hay destinos con estos filtros',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                              )
+                            : GridView.builder(
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      crossAxisSpacing: 15,
+                                      mainAxisSpacing: 15,
+                                      childAspectRatio: 0.8,
+                                    ),
+                                itemCount: filtrados.length,
+                                itemBuilder: (context, index) {
+                                  return DestinoCard(destino: filtrados[index]);
+                                },
+                              ),
                       ),
                     ],
-                  ),
-                ],
+                  );
+                },
               ),
-              const SizedBox(height: 5),
-              Expanded(
-                child: FutureBuilder<List<Destino>>(
-                  future: _destinosFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    if (snapshot.hasError) {
-                      return Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.wifi_off_outlined,
-                              size: 48,
-                              color: Colors.grey[400],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'No se pudieron cargar los destinos',
-                              style: TextStyle(color: Colors.grey[600]),
-                            ),
-                            const SizedBox(height: 12),
-                            TextButton.icon(
-                              onPressed: () => setState(() {
-                                _destinosFuture =
-                                    DestinoService.obtenerDestinos();
-                              }),
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('Reintentar'),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    final destinos = snapshot.data ?? [];
-                    _destinosCargados = destinos;
-
-                    if (destinos.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'No hay destinos disponibles',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                      );
-                    }
-
-                    final categorias = destinos.map((d) => d.categoria).toSet().toList();
-                    final departamentos = destinos.map((d) => d.departamento).toSet().toList();
-
-                    final filtrados = destinos.where((d) {
-                      if (_categoriaSeleccionada != null && d.categoria != _categoriaSeleccionada) return false;
-                      if (_departamentoSeleccionado != null && d.departamento != _departamentoSeleccionado) return false;
-                      return true;
-                    }).toList();
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            // DDL Categoría
-                            Expanded(
-                              child: _filtroDropdown<String>(
-                                value: _categoriaSeleccionada,
-                                hint: 'Categoría',
-                                items: [
-                                  const DropdownMenuItem<String>(
-                                    value: null,
-                                    child: Text('Todas'),
-                                  ),
-                                  ...categorias.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))),
-                                ],
-                                onChanged: (value) => setState(() => _categoriaSeleccionada = value),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            // DDL Departamento
-                            Expanded(
-                              child: _filtroDropdown<String>(
-                                value: _departamentoSeleccionado,
-                                hint: 'Departamento',
-                                items: [
-                                  const DropdownMenuItem<String>(
-                                    value: null,
-                                    child: Text('Todos'),
-                                  ),
-                                  ...departamentos.map((dep) => DropdownMenuItem(value: dep, child: Text(dep))),
-                                ],
-                                onChanged: (value) => setState(() => _departamentoSeleccionado = value),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        // Grid de destinos filtrados
-                        Expanded(
-                          child: filtrados.isEmpty
-                              ? Center(
-                                  child: Text(
-                                    'No hay destinos con estos filtros',
-                                    style: TextStyle(color: Colors.grey[600]),
-                                  ),
-                                )
-                              : GridView.builder(
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        crossAxisSpacing: 15,
-                                        mainAxisSpacing: 15,
-                                        childAspectRatio: 0.8,
-                                      ),
-                                  itemCount: filtrados.length,
-                                  itemBuilder: (context, index) {
-                                    return DestinoCard(destino: filtrados[index]);
-                                  },
-                                ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
     );
   }
 }

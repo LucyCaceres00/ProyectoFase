@@ -15,30 +15,10 @@ class ApiResponse<T> {
     Map<String, dynamic> json, {
     T Function(dynamic)? fromJsonData,
   }) {
-    // Manejar diferentes formatos de respuesta
-    // Formato 1: {statusCode, message, data, success}
-    // Formato 2: {EstatusCode, Message, Data, Succeeded} (tu API)
-
-    final statusCode = json['statusCode'] ??
-                      json['EstatusCode'] ??
-                      json['estatusCode'] ??
-                      0;
-
-    final message = json['message'] ??
-                   json['Message'] ??
-                   json['mensaje'] ??
-                   json['Mensaje'] ??
-                   '';
-
-    final dataField = json['data'] ??
-                     json['Data'] ??
-                     json['datos'] ??
-                     json['Datos'];
-
-    final success = json['success'] ??
-                   json['Success'] ??
-                   json['Succeeded'] ??
-                   (statusCode >= 200 && statusCode < 300);
+    final statusCode = json['EstatusCode'] ?? 0;
+    final message = json['Message'] ?? '';
+    final dataField = json['Data'];
+    final success = json['Succeeded'] ?? (statusCode == 200);
 
     return ApiResponse<T>(
       statusCode: statusCode,

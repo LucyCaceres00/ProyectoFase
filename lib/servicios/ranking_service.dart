@@ -11,7 +11,7 @@ class RankingService {
         ? ApiConfig.getAuthHeaders(token)
         : ApiConfig.defaultHeaders;
 
-    final url = Uri.parse(ApiConfig.buildUrl('Ranking/obtenerRanking'));
+    final url = Uri.parse(ApiConfig.buildUrl('Visita/obtenerRankingVisitas'));
 
     final response = await http
         .get(url, headers: headers)
@@ -20,15 +20,11 @@ class RankingService {
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       final data = body['Data'] as List<dynamic>? ?? [];
-      return data
-          .asMap()
-          .entries
-          .map((e) {
-            final json = e.value as Map<String, dynamic>;
-            json['posicion'] = json['posicion'] ?? (e.key + 1);
-            return RankingUsuario.fromJson(json);
-          })
-          .toList();
+      return data.asMap().entries.map((e) {
+        final json = Map<String, dynamic>.from(e.value as Map<String, dynamic>);
+        json['posicion'] = e.key + 1;
+        return RankingUsuario.fromJson(json);
+      }).toList();
     }
 
     throw Exception('Error al obtener el ranking: ${response.statusCode}');
