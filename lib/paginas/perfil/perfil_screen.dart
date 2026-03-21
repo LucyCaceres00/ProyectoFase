@@ -83,6 +83,7 @@ class PerfilScreen extends StatelessWidget {
   // ── Avatar Card ─────────────────────────────────────────────────────────────
 
   Widget _avatarCard(
+    BuildContext context,
     String iniciales,
     String nombre,
     String correo,
