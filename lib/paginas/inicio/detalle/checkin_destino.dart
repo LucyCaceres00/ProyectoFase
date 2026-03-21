@@ -6,7 +6,7 @@ import '../../../servicios/ubicacion_service.dart';
 import '../../../servicios/visita_service.dart';
 import '../../../servicios/registro_service.dart';
 import '../../../widgets/app_dialogo.dart';
-import '../resena_screen.dart';
+import '../../resena/resena_screen.dart';
 
 class CheckinDestino extends StatefulWidget {
   final Destino destino;
@@ -50,7 +50,67 @@ class _CheckinDestinoState extends State<CheckinDestino> {
     } catch (_) {}
   }
 
+  String? _validarHorario() {
+    final horarios = widget.destino.horariosDestino;
+    if (horarios == null || horarios.isEmpty) return null;
+
+    final dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    final diaActual = dias[DateTime.now().weekday % 7];
+
+    final horarioHoy = horarios.firstWhere(
+      (h) => h.diaSemana == diaActual,
+      orElse: () => horarios.first,
+    );
+
+    if (horarioHoy.esCerrado) {
+      return '${widget.destino.nombre} está cerrado hoy ($diaActual). No es posible hacer check-in.';
+    }
+
+    TimeOfDay parsearHora(String hora) {
+      final texto = hora.trim().toUpperCase();
+      final esAm = texto.contains('AM');
+      final esPm = texto.contains('PM');
+      final soloHora = texto.replaceAll('AM', '').replaceAll('PM', '').trim();
+      final partes = soloHora.split(':');
+      int horas = int.parse(partes[0].trim());
+      final minutos = partes.length > 1 ? int.parse(partes[1].trim()) : 0;
+      if (esAm || esPm) {
+        if (esAm && horas == 12) horas = 0;
+        if (esPm && horas != 12) horas += 12;
+      }
+      return TimeOfDay(hour: horas, minute: minutos);
+    }
+
+    final ahora = TimeOfDay.now();
+    final apertura = parsearHora(horarioHoy.horaApertura);
+    final cierre = parsearHora(horarioHoy.horaCierre);
+
+    final ahoraMin = ahora.hour * 60 + ahora.minute;
+    final aperturaMin = apertura.hour * 60 + apertura.minute;
+    final cierreMin = cierre.hour * 60 + cierre.minute;
+
+    if (ahoraMin < aperturaMin) {
+      return '${widget.destino.nombre} aún no ha abierto. Abre a las ${horarioHoy.horaApertura.trim()}.';
+    }
+    if (ahoraMin > cierreMin) {
+      return '${widget.destino.nombre} ya cerró hoy. El horario de cierre fue a las ${horarioHoy.horaCierre.trim()}.';
+    }
+
+    return null;
+  }
+
   Future<void> _hacerCheckin() async {
+    final errorHorario = _validarHorario();
+    if (errorHorario != null) {
+      AppDialogo.mostrar(
+        context,
+        icono: Icons.access_time_rounded,
+        titulo: 'Fuera de horario',
+        mensaje: errorHorario,
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,

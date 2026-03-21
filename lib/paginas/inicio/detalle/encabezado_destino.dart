@@ -81,11 +81,6 @@ class EncabezadoDestino extends StatelessWidget {
                 child: _botonCircular(Icons.arrow_back),
               ),
             ),
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 10,
-              right: 16,
-              child: _botonCircular(Icons.bookmark_border),
-            ),
           ],
         ),
       ),

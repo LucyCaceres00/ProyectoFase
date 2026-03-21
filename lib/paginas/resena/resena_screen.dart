@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../app_theme.dart';
@@ -8,6 +7,9 @@ import '../../servicios/resena_service.dart';
 import '../../servicios/registro_service.dart';
 import '../../servicios/visita_service.dart';
 import '../../widgets/app_dialogo.dart';
+import 'widgets/encabezado_resena.dart';
+import 'widgets/fila_calificacion.dart';
+import 'widgets/selector_imagenes_resena.dart';
 
 class ResenaScreen extends StatefulWidget {
   final Destino destino;
@@ -65,17 +67,30 @@ class _ResenaScreenState extends State<ResenaScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.colorBorde, borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppTheme.colorBorde,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(height: 16),
               ListTile(
                 leading: const Icon(Icons.photo_library_rounded, color: AppTheme.primaryColor),
                 title: const Text('Elegir de la galería'),
-                onTap: () { Navigator.pop(context); _seleccionarImagenes(ImageSource.gallery); },
+                onTap: () {
+                  Navigator.pop(context);
+                  _seleccionarImagenes(ImageSource.gallery);
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.camera_alt_rounded, color: AppTheme.primaryColor),
                 title: const Text('Tomar una foto'),
-                onTap: () { Navigator.pop(context); _seleccionarImagenes(ImageSource.camera); },
+                onTap: () {
+                  Navigator.pop(context);
+                  _seleccionarImagenes(ImageSource.camera);
+                },
               ),
             ],
           ),
@@ -113,7 +128,6 @@ class _ResenaScreenState extends State<ResenaScreen> {
         imagenes: _imagenes,
       );
 
-      // Limpiar cache: ya puede hacer otro check-in
       await VisitaService.guardarCachePendiente(usuarioId, widget.destino.destinoid, false);
 
       if (!mounted) return;
@@ -122,13 +136,14 @@ class _ResenaScreenState extends State<ResenaScreen> {
         context,
         titulo: '¡Reseña enviada!',
         mensaje: 'Gracias por compartir tu experiencia en ${widget.destino.nombre}.',
-        alCerrar: () => Navigator.pop(context, true), // true = reseña guardada
+        alCerrar: () => Navigator.pop(context, true),
       );
     } catch (e) {
       if (!mounted) return;
       setState(() => _enviando = false);
 
-      final esNoAutorizado = e.toString().contains('No autorizado') || e.toString().contains('sesión');
+      final esNoAutorizado =
+          e.toString().contains('No autorizado') || e.toString().contains('sesión');
       AppDialogo.mostrar(
         context,
         icono: esNoAutorizado ? Icons.lock_outline : Icons.error_outline,
@@ -169,14 +184,12 @@ class _ResenaScreenState extends State<ResenaScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Encabezado del destino ───────────────────────────────
-                  _encabezadoDestino(),
+                  EncabezadoResena(destino: widget.destino),
                   const SizedBox(height: 28),
 
-                  // ── Categorías obligatorias ──────────────────────────────
                   _seccionTitulo('Calificaciones obligatorias'),
                   const SizedBox(height: 16),
-                  _filaCategoriaEstrellas(
+                  FilaCalificacion(
                     icono: Icons.accessibility_new_rounded,
                     label: 'Acceso',
                     descripcion: 'Facilidad para llegar y moverse',
@@ -185,7 +198,7 @@ class _ResenaScreenState extends State<ResenaScreen> {
                     obligatorio: true,
                   ),
                   const SizedBox(height: 14),
-                  _filaCategoriaEstrellas(
+                  FilaCalificacion(
                     icono: Icons.landscape_rounded,
                     label: 'Estado del lugar',
                     descripcion: 'Conservación e instalaciones',
@@ -196,7 +209,6 @@ class _ResenaScreenState extends State<ResenaScreen> {
 
                   const SizedBox(height: 28),
 
-                  // ── Categorías opcionales ────────────────────────────────
                   _seccionTitulo('Calificaciones opcionales'),
                   const SizedBox(height: 4),
                   const Text(
@@ -204,7 +216,7 @@ class _ResenaScreenState extends State<ResenaScreen> {
                     style: TextStyle(fontSize: 12, color: AppTheme.textoSuave),
                   ),
                   const SizedBox(height: 16),
-                  _filaCategoriaEstrellas(
+                  FilaCalificacion(
                     icono: Icons.restaurant_rounded,
                     label: 'Comida',
                     descripcion: 'Restaurantes o vendedores cercanos',
@@ -213,7 +225,7 @@ class _ResenaScreenState extends State<ResenaScreen> {
                     obligatorio: false,
                   ),
                   const SizedBox(height: 14),
-                  _filaCategoriaEstrellas(
+                  FilaCalificacion(
                     icono: Icons.support_agent_rounded,
                     label: 'Servicio',
                     descripcion: 'Atención al visitante',
@@ -224,7 +236,6 @@ class _ResenaScreenState extends State<ResenaScreen> {
 
                   const SizedBox(height: 28),
 
-                  // ── Imágenes ─────────────────────────────────────────────
                   _seccionTitulo('Fotos'),
                   const SizedBox(height: 4),
                   const Text(
@@ -232,11 +243,14 @@ class _ResenaScreenState extends State<ResenaScreen> {
                     style: TextStyle(fontSize: 12, color: AppTheme.textoSuave),
                   ),
                   const SizedBox(height: 12),
-                  _seccionImagenes(),
+                  SelectorImagenesResena(
+                    imagenes: _imagenes,
+                    onAgregar: _mostrarOpcionesImagen,
+                    onEliminar: (i) => setState(() => _imagenes.removeAt(i)),
+                  ),
 
                   const SizedBox(height: 28),
 
-                  // ── Comentario ───────────────────────────────────────────
                   _seccionTitulo('Comentario'),
                   const SizedBox(height: 4),
                   const Text(
@@ -274,9 +288,13 @@ class _ResenaScreenState extends State<ResenaScreen> {
             ),
           ),
 
-          // ── Botón enviar ─────────────────────────────────────────────────
           Container(
-            padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              12,
+              20,
+              MediaQuery.of(context).padding.bottom + 12,
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
@@ -310,7 +328,10 @@ class _ResenaScreenState extends State<ResenaScreen> {
                         children: [
                           Icon(Icons.star_rounded, size: 20),
                           SizedBox(width: 8),
-                          Text('Enviar reseña', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                          Text(
+                            'Enviar reseña',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                          ),
                         ],
                       ),
               ),
@@ -318,154 +339,6 @@ class _ResenaScreenState extends State<ResenaScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  // ── Widgets auxiliares ──────────────────────────────────────────────────────
-
-  Widget _seccionImagenes() {
-    return SizedBox(
-      height: 100,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          // Botón agregar
-          if (_imagenes.length < 5)
-            GestureDetector(
-              onTap: _mostrarOpcionesImagen,
-              child: Container(
-                width: 100,
-                height: 100,
-                margin: const EdgeInsets.only(right: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8F8FC),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.colorBorde, style: BorderStyle.solid),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add_photo_alternate_rounded, color: AppTheme.primaryColor, size: 28),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${_imagenes.length}/5',
-                      style: const TextStyle(fontSize: 11, color: AppTheme.textoSuave),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          // Miniaturas seleccionadas
-          ..._imagenes.asMap().entries.map((entry) {
-            final i = entry.key;
-            final img = entry.value;
-            return Stack(
-              children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  margin: const EdgeInsets.only(right: 10),
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(14)),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: Image.file(File(img.path), fit: BoxFit.cover),
-                  ),
-                ),
-                Positioned(
-                  top: 4,
-                  right: 14,
-                  child: GestureDetector(
-                    onTap: () => setState(() => _imagenes.removeAt(i)),
-                    child: Container(
-                      width: 22,
-                      height: 22,
-                      decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                      child: const Icon(Icons.close_rounded, color: Colors.white, size: 14),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _encabezadoDestino() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.backgroundColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.colorBorde),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: widget.destino.imagenprincipal != null
-                ? Image.network(
-                    widget.destino.imagenprincipal!,
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _placeholderImagen(),
-                  )
-                : _placeholderImagen(),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.destino.nombre,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.textoOscuro,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.location_on, size: 13, color: AppTheme.textoSuave),
-                    const SizedBox(width: 3),
-                    Text(
-                      '${widget.destino.municipio}, ${widget.destino.departamento}',
-                      style: const TextStyle(fontSize: 12, color: AppTheme.textoSuave),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Icon(Icons.star_rounded, size: 14, color: AppTheme.colorEstrella),
-                    const SizedBox(width: 3),
-                    Text(
-                      '${widget.destino.calificacionpromedio}  ·  ${widget.destino.categoria}',
-                      style: const TextStyle(fontSize: 12, color: AppTheme.textoSuave),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _placeholderImagen() {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: const Icon(Icons.image_outlined, color: AppTheme.primaryColor),
     );
   }
 
@@ -477,89 +350,6 @@ class _ResenaScreenState extends State<ResenaScreen> {
         fontWeight: FontWeight.w700,
         color: AppTheme.textoOscuro,
       ),
-    );
-  }
-
-  Widget _filaCategoriaEstrellas({
-    required IconData icono,
-    required String label,
-    required String descripcion,
-    required int valor,
-    required ValueChanged<int> onChanged,
-    required bool obligatorio,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8F8FC),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: valor > 0 ? AppTheme.surfaceColor.withValues(alpha: 0.4) : AppTheme.colorBorde,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icono, color: AppTheme.primaryColor, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.textoOscuro,
-                      ),
-                    ),
-                    if (obligatorio) ...[
-                      const SizedBox(width: 4),
-                      const Text('*', style: TextStyle(color: Colors.red, fontSize: 13)),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  descripcion,
-                  style: const TextStyle(fontSize: 11, color: AppTheme.textoSuave),
-                ),
-                const SizedBox(height: 8),
-                _estrellas(valor: valor, onChanged: onChanged),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _estrellas({required int valor, required ValueChanged<int> onChanged}) {
-    return Row(
-      children: List.generate(5, (i) {
-        final estrella = i + 1;
-        return GestureDetector(
-          onTap: () => onChanged(estrella == valor ? 0 : estrella),
-          child: Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: Icon(
-              estrella <= valor ? Icons.star_rounded : Icons.star_outline_rounded,
-              size: 28,
-              color: estrella <= valor ? AppTheme.colorEstrella : AppTheme.colorBorde,
-            ),
-          ),
-        );
-      }),
     );
   }
 }

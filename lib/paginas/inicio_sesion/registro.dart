@@ -51,7 +51,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
         });
 
         if (response.success) {
-          // Registro exitoso
           if (mounted) {
             // Guardar el token si viene en la respuesta
             if (response.data != null && response.data?['Token'] != null) {
@@ -65,7 +64,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
               ),
             );
 
-            // Navegar a la pantalla principal (ExplorarDestinosScreen)
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
@@ -75,7 +73,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
             );
           }
         } else {
-          // Error en el registro
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -192,8 +189,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
               ),
 
               const SizedBox(height: 20),
-
-              // --- CAMPO: CORREO ELECTRÓNICO ---
               _buildLabel("Correo electrónico", colors.primary),
               TextFormField(
                 controller: _correoController,
@@ -213,7 +208,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
                   if (value == null || value.isEmpty) {
                     return 'Por favor ingresa tu correo electrónico';
                   }
-                  // Validación básica de email
                   final emailRegex = RegExp(
                     r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                   );

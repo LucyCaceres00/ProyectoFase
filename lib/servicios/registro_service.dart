@@ -59,7 +59,7 @@ class RegistrarService {
     try {
       final response = await _apiService.post<Map<String, dynamic>>(
         'Authentication/login',
-        body: {'Correo': correo, 'Contrasena': contrasena},
+        body: {'correo': correo, 'contrasena': contrasena},
         fromJson: (json) => json as Map<String, dynamic>,
       );
 
@@ -71,11 +71,11 @@ class RegistrarService {
         if (data['Id'] != null) {
           _usuarioId = data['Id'] as int;
         }
-        _nombre = data['Nombre'] as String?;
-        _correo = data['Correo'] as String?;
-        _nivelExplorador = data['NivelExplorador'] as String?;
-        if (data['TuriPuntos'] != null) {
-          _turiPuntos = (data['TuriPuntos'] as num).toInt();
+        _nombre = data['nombre'] as String?;
+        _correo = data['correo'] as String?;
+        _nivelExplorador = data['nivelExplorador'] as String?;
+        if (data['turiPuntos'] != null) {
+          _turiPuntos = (data['turiPuntos'] as num).toInt();
         }
       }
 

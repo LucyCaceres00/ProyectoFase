@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../app_theme.dart';
 import '../../modelos/destino.dart';
 import '../../servicios/destino_service.dart';
-import '../inicio_sesion/inicio_sesion.dart';
 import '../perfil/perfil_screen.dart';
 import '../ranking/ranking_screen.dart';
 import 'destino_card.dart';
@@ -199,21 +198,6 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
                         color: theme.colorScheme.primary,
                       ),
                       onPressed: _refrescarDestinos,
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.logout_outlined,
-                        color: theme.colorScheme.primary,
-                      ),
-                      onPressed: () {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                          (route) => false,
-                        );
-                      },
                     ),
                   ],
                 ),
