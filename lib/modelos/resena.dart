@@ -8,6 +8,7 @@ class Resena {
   final double? puntuacionFinal;
   final String? comentario;
   final String? fechaResena;
+  final String? destino;
 
   Resena({
     required this.usuarioId,
@@ -19,6 +20,7 @@ class Resena {
     this.puntuacionFinal,
     this.comentario,
     this.fechaResena,
+    this.destino,
   });
 
   factory Resena.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class Resena {
       puntuacionFinal: (json['puntuacionfinal'] as num?)?.toDouble(),
       comentario: json['comentario'],
       fechaResena: json['fecharesena'],
+      destino: json['destino'],
     );
   }
 

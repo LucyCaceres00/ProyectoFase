@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../app_theme.dart';
 import '../../modelos/destino.dart';
 import '../../servicios/destino_service.dart';
@@ -21,10 +22,36 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
   String? _departamentoSeleccionado;
   List<Destino> _destinosCargados = [];
 
+  BannerAd? _bannerAd;
+  bool _bannerListo = false;
+
+  // En producción reemplaza este ID por el tuyo de AdMob
+  static const String _bannerAdUnitId =
+      'ca-app-pub-3940256099942544/6300978111';
+
   @override
   void initState() {
     super.initState();
     _destinosFuture = DestinoService.obtenerDestinos();
+    _cargarBanner();
+  }
+
+  void _cargarBanner() {
+    _bannerAd = BannerAd(
+      adUnitId: _bannerAdUnitId,
+      size: AdSize.banner,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) => setState(() => _bannerListo = true),
+        onAdFailedToLoad: (ad, error) => ad.dispose(),
+      ),
+    )..load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
   }
 
   Future<void> _refrescarDestinos() async {
@@ -203,7 +230,14 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 5),
+            if (_bannerListo && _bannerAd != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                alignment: Alignment.center,
+                width: _bannerAd!.size.width.toDouble(),
+                height: _bannerAd!.size.height.toDouble(),
+                child: AdWidget(ad: _bannerAd!),
+              ),
             Expanded(
               child: FutureBuilder<List<Destino>>(
                 future: _destinosFuture,
@@ -264,11 +298,13 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
 
                   final filtrados = destinos.where((d) {
                     if (_categoriaSeleccionada != null &&
-                        d.categoria != _categoriaSeleccionada)
+                        d.categoria != _categoriaSeleccionada) {
                       return false;
+                    }
                     if (_departamentoSeleccionado != null &&
-                        d.departamento != _departamentoSeleccionado)
+                        d.departamento != _departamentoSeleccionado) {
                       return false;
+                    }
                     return true;
                   }).toList();
 

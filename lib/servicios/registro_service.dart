@@ -85,6 +85,21 @@ class RegistrarService {
     }
   }
 
+  Future<ApiResponse<Map<String, dynamic>>> cambiarContrasenia({
+    required String nuevaContrasenia,
+  }) async {
+    try {
+      final response = await _apiService.put<Map<String, dynamic>>(
+        'Usuario/cambiarContraseniaUsuario/$nuevaContrasenia',
+        fromJson: (json) => json as Map<String, dynamic>,
+        requiresAuth: true,
+      );
+      return response;
+    } catch (e) {
+      return ApiResponse.error('Error al cambiar contraseña: $e');
+    }
+  }
+
   void setToken(String token) {
     _apiService.setToken(token);
   }

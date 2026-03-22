@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'app_theme.dart'; 
 import 'paginas/inicio_sesion/inicio_sesion.dart'; 
 
-void main() => runApp(const MyApp());
+void main(){
+  WidgetsFlutterBinding.ensureInitialized();
+  MobileAds.instance.initialize();
+  runApp(const MyApp());
+} 
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

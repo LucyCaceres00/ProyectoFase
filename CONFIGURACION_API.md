@@ -258,3 +258,9 @@ static const String baseUrl = 'https://api.tuapp.com/api/';
 ```
 
 Y configurar HTTPS correctamente con un certificado SSL válido.
+
+
+
+## ANUNCIOS
+# ID: ca-app-pub-6059464478371680~4149758566
+#     ca-app-pub-6059464478371680/8324240045

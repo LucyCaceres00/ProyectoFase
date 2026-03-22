@@ -4,6 +4,9 @@ import '../../modelos/usuario_perfil.dart';
 import '../../servicios/perfil_service.dart';
 import '../../servicios/registro_service.dart';
 import '../inicio_sesion/inicio_sesion.dart';
+import 'resenas_screen.dart';
+import 'turipuntos_screen.dart';
+import 'visitas_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -52,7 +55,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () => _mostrarModalCambiarContrasenia(context),
                         child: Container(
                           width: 38,
                           height: 38,
@@ -69,8 +72,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-
+                  const SizedBox(height: 10),
                   // ── Tarjeta de avatar ──────────────────────────────────────
                   _avatarCard(
                     iniciales: perfil?.iniciales ?? '—',
@@ -79,15 +81,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     nivel: perfil?.nivelExplorador ?? '',
                     cargando: cargando,
                   ),
-                  const SizedBox(height: 16),
-
+                  const SizedBox(height: 12),
                   // ── Estadísticas ───────────────────────────────────────────
                   _statsRow(
                     visitas: perfil?.totalVisitas,
                     puntos: perfil?.turiPuntos,
                     resenias: perfil?.totalResenias,
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 12),
 
                   // ── Mi Cuenta ──────────────────────────────────────────────
                   const Padding(
@@ -103,11 +104,17 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     ),
                   ),
                   _menuCard([
-                    _menuItem(Icons.place_rounded, 'Mis visitas'),
+                    _menuItem(Icons.place_rounded, 'Mis visitas', onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const VisitasScreen()));
+                    }),
                     _divider(),
-                    _menuItem(Icons.stars_rounded, 'Mis TuriPuntos'),
+                    _menuItem(Icons.stars_rounded, 'Mis TuriPuntos', onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const TuriPuntosScreen()));
+                    }),
                     _divider(),
-                    _menuItem(Icons.rate_review_rounded, 'Mis reseñas'),
+                    _menuItem(Icons.rate_review_rounded, 'Mis reseñas', onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ResenasScreen()));
+                    }),
                   ]),
 
                   const SizedBox(height: 16),
@@ -121,6 +128,137 @@ class _PerfilScreenState extends State<PerfilScreen> {
           },
         ),
       ),
+    );
+  }
+
+  // ── Modal Cambiar Contraseña ─────────────────────────────────────────────────
+
+  void _mostrarModalCambiarContrasenia(BuildContext context) {
+    
+    final nuevaCtrl = TextEditingController();
+    final confirmarCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool cargando = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AppTheme.colorBorde,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Cambiar contraseña',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.textoOscuro,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: nuevaCtrl,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: 'Nueva contraseña',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          prefixIcon: const Icon(Icons.lock_outline_rounded),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Ingresa una contraseña';
+                          if (v.length < 6) return 'Mínimo 6 caracteres';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+                      TextFormField(
+                        controller: confirmarCtrl,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: 'Confirmar contraseña',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          prefixIcon: const Icon(Icons.lock_outline_rounded),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Confirma tu contraseña';
+                          if (v != nuevaCtrl.text) return 'Las contraseñas no coinciden';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: cargando
+                              ? null
+                              : () async {
+                                  if (!formKey.currentState!.validate()) return;
+                                  setModalState(() => cargando = true);
+                                  final response = await RegistrarService().cambiarContrasenia(
+                                    nuevaContrasenia: nuevaCtrl.text,
+                                  );
+                                  setModalState(() => cargando = false);
+                                  if (!ctx.mounted) return;
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(response.success
+                                          ? 'Contraseña actualizada correctamente'
+                                          : response.message),
+                                      backgroundColor: response.success ? Colors.green : Colors.red,
+                                    ),
+                                  );
+                                },
+                          child: cargando
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                )
+                              : const Text(
+                                  'Guardar',
+                                  style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -271,8 +409,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
-  Widget _menuItem(IconData icono, String label) {
-    return Padding(
+  Widget _menuItem(IconData icono, String label, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
@@ -298,6 +438,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           ),
           const Icon(Icons.chevron_right_rounded, color: AppTheme.textoSuave, size: 22),
         ],
+      ),
       ),
     );
   }
