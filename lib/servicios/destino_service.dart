@@ -19,4 +19,9 @@ class DestinoService {
       throw Exception('Error al obtener destinos: ${response.statusCode}');
     }
   }
+
+  static Future<Destino> obtenerDestinoPorId(int id) async {
+    final destinos = await obtenerDestinos();
+    return destinos.firstWhere((d) => d.destinoid == id);
+  }
 }

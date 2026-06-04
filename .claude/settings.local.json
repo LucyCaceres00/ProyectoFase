@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(flutter pub get:*)",
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(Get-ChildItem -Path . -Recurse -Directory)",
+      "Bash(Select-Object FullName)"
     ]
   }
 }

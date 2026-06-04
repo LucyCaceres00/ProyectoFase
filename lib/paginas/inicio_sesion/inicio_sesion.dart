@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../inicio/inicio.dart';
 import '../inicio_sesion/registro.dart';
+import '../inicio_sesion/modal_contrasenia.dart';
 import '../../servicios/registro_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -174,7 +175,21 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            const SizedBox(height: 40),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => ModalContrasenia.mostrar(context),
+                child: Text(
+                  '¿Olvidaste tu contraseña?',
+                  style: TextStyle(
+                    color: colors.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
 
             // --- BOTÓN: INICIAR SESIÓN ---
             SizedBox(

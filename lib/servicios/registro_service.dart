@@ -85,6 +85,21 @@ class RegistrarService {
     }
   }
 
+  Future<ApiResponse<Map<String, dynamic>>> recuperarContrasena({
+    required String correo,
+  }) async {
+    try {
+      final response = await _apiService.post<Map<String, dynamic>>(
+        'Authentication/recuperarContrasena',
+        body: {'correo': correo},
+        fromJson: (json) => json as Map<String, dynamic>,
+      );
+      return response;
+    } catch (e) {
+      return ApiResponse.error('Error al recuperar contraseña: $e');
+    }
+  }
+
   Future<ApiResponse<Map<String, dynamic>>> cambiarContrasenia({
     required String nuevaContrasenia,
   }) async {

@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../app_theme.dart';
 import '../../../modelos/destino.dart';
 import '../../../modelos/estado_visita.dart';
@@ -7,10 +11,16 @@ import '../../../servicios/visita_service.dart';
 import '../../../servicios/registro_service.dart';
 import '../../../widgets/app_dialogo.dart';
 import '../../resena/resena_screen.dart';
+import '../../pago/pago_entrada_screen.dart';
 
 class CheckinDestino extends StatefulWidget {
   final Destino destino;
-  const CheckinDestino({super.key, required this.destino});
+  final VoidCallback? onResenaEnviada;
+  const CheckinDestino({
+    super.key,
+    required this.destino,
+    this.onResenaEnviada,
+  });
 
   @override
   State<CheckinDestino> createState() => _CheckinDestinoState();
@@ -19,6 +29,8 @@ class CheckinDestino extends StatefulWidget {
 class _CheckinDestinoState extends State<CheckinDestino> {
   EstadoVisita? _estadoVisita;
   bool _cargando = true;
+  int _turipuntosGanados = 0;
+  final GlobalKey _tarjetaKey = GlobalKey();
 
   @override
   void initState() {
@@ -54,7 +66,15 @@ class _CheckinDestinoState extends State<CheckinDestino> {
     final horarios = widget.destino.horariosDestino;
     if (horarios == null || horarios.isEmpty) return null;
 
-    final dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    final dias = [
+      'Domingo',
+      'Lunes',
+      'Martes',
+      'Miércoles',
+      'Jueves',
+      'Viernes',
+      'Sábado',
+    ];
     final diaActual = dias[DateTime.now().weekday % 7];
 
     final horarioHoy = horarios.firstWhere(
@@ -136,7 +156,11 @@ class _CheckinDestinoState extends State<CheckinDestino> {
       }
 
       if (resultado.permitido) {
-        _mostrarConfirmacion(resultado);
+        if (_requierePago()) {
+          _abrirPagoEntrada(resultado);
+        } else {
+          _mostrarConfirmacion(resultado);
+        }
       } else {
         AppDialogo.mostrar(
           context,
@@ -229,7 +253,7 @@ class _CheckinDestinoState extends State<CheckinDestino> {
     try {
       final usuarioId = RegistrarService().usuarioId ?? 0;
 
-      await VisitaService.guardarVisita(
+      final turipuntos = await VisitaService.guardarVisita(
         usuarioId: usuarioId,
         destinoId: widget.destino.destinoid,
         latitud: resultado.latitud!,
@@ -241,6 +265,7 @@ class _CheckinDestinoState extends State<CheckinDestino> {
 
       setState(() {
         _estadoVisita = EstadoVisita(tieneReseniaPendiente: true);
+        //_turipuntosGanados = turipuntos;
       });
 
       AppDialogo.mostrarExito(
@@ -268,6 +293,33 @@ class _CheckinDestinoState extends State<CheckinDestino> {
     }
   }
 
+  bool _requierePago() {
+    if (widget.destino.esgratis) return false;
+    final tarifas = widget.destino.tarifasDestino;
+    if (tarifas == null || tarifas.isEmpty) return false;
+    return tarifas.any((t) => t.precio > 0);
+  }
+
+  Future<void> _abrirPagoEntrada(ResultadoUbicacion resultado) async {
+    final exitoso = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            PagoEntradaScreen(destino: widget.destino, resultado: resultado),
+      ),
+    );
+
+    if (exitoso == true && mounted) {
+      setState(() => _estadoVisita = EstadoVisita(tieneReseniaPendiente: true));
+      AppDialogo.mostrarExito(
+        context,
+        titulo: '¡Visita registrada!',
+        mensaje:
+            'Tu visita a ${widget.destino.nombre} fue registrada. ¡Comparte tu experiencia escribiendo una reseña!',
+      );
+    }
+  }
+
   Future<void> _abrirResena() async {
     final resenaGuardada = await Navigator.push<bool>(
       context,
@@ -278,6 +330,7 @@ class _CheckinDestinoState extends State<CheckinDestino> {
       setState(() {
         _estadoVisita = EstadoVisita(tieneReseniaPendiente: false);
       });
+      widget.onResenaEnviada?.call();
     }
   }
 
@@ -306,8 +359,21 @@ class _CheckinDestinoState extends State<CheckinDestino> {
         child: _cargando
             ? const Center(child: CircularProgressIndicator())
             : _estadoVisita?.tieneReseniaPendiente == true
-            ? _botonResena()
-            : _botonCheckin(),
+            ? Row(
+                children: [
+                  Expanded(child: _botonResena()),
+                  const SizedBox(width: 12),
+                  _botonCorazon(),
+                  _botonCompartir(),
+                ],
+              )
+            : Row(
+                children: [
+                  Expanded(child: _botonCheckin()),
+                  const SizedBox(width: 12),
+                  _botonCorazon(),
+                ],
+              ),
       ),
     );
   }
@@ -354,5 +420,203 @@ class _CheckinDestinoState extends State<CheckinDestino> {
         ],
       ),
     );
+  }
+
+  Widget _botonCorazon() {
+    return IconButton(
+      onPressed: null,
+      icon: const Icon(Icons.favorite_border, color: AppTheme.primaryColor),
+    );
+  }
+
+  Widget _botonCompartir() {
+    return IconButton(
+      onPressed: _compartir,
+      icon: const Icon(Icons.share, color: AppTheme.primaryColor),
+    );
+  }
+
+  Future<void> _compartir() async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _bottomSheetCompartir(),
+    );
+  }
+
+  Widget _bottomSheetCompartir() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Comparte tu visita',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 20),
+          RepaintBoundary(
+            key: _tarjetaKey,
+            child: _buildTarjetaCompartir(),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton.icon(
+              onPressed: _capturarYCompartir,
+              icon: const Icon(Icons.share),
+              label: const Text(
+                'Compartir',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTarjetaCompartir() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppTheme.primaryColor, ui.Color.fromARGB(255, 0, 0, 0)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.destino.imagenprincipal != null)
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+              child: Image.network(
+                widget.destino.imagenprincipal!,
+                height: 180,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  height: 180,
+                  color: Colors.white12,
+                  child: const Icon(
+                    Icons.image_outlined,
+                    color: Colors.white54,
+                    size: 48,
+                  ),
+                ),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+            child: Column(
+              children: [
+                Text(
+                  widget.destino.nombre,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${widget.destino.municipio}, ${widget.destino.departamento}',
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.amber[600],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.star_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        _turipuntosGanados > 0
+                            ? '+$_turipuntosGanados TuriPuntos'
+                            : 'TuriPuntos ganados',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Image.asset('imagenes/toori_logo_letras_blancas.png', height: 28),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _capturarYCompartir() async {
+    try {
+      final boundary = _tarjetaKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
+      if (boundary == null) return;
+
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return;
+
+      final tempDir = Directory.systemTemp;
+      final file = File(
+        '${tempDir.path}/toori_visita_${widget.destino.destinoid}.png',
+      );
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+
+      if (!mounted) return;
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: '¡Visité ${widget.destino.nombre} con Toori! 🌍',
+        ),
+      );
+    } catch (_) {}
   }
 }

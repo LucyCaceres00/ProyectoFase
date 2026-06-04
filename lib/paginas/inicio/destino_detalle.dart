@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../app_theme.dart';
 import '../../modelos/destino.dart';
+import '../../servicios/destino_service.dart';
 import 'detalle/encabezado_destino.dart';
 import 'detalle/identidad_destino.dart';
 import 'detalle/descripcion_destino.dart';
@@ -9,9 +10,29 @@ import 'detalle/tarifas_destino.dart';
 import 'detalle/mapa_destino.dart';
 import 'detalle/checkin_destino.dart';
 
-class DestinoDetalleScreen extends StatelessWidget {
+class DestinoDetalleScreen extends StatefulWidget {
   final Destino destino;
   const DestinoDetalleScreen({super.key, required this.destino});
+
+  @override
+  State<DestinoDetalleScreen> createState() => _DestinoDetalleScreenState();
+}
+
+class _DestinoDetalleScreenState extends State<DestinoDetalleScreen> {
+  late Destino _destino;
+
+  @override
+  void initState() {
+    super.initState();
+    _destino = widget.destino;
+  }
+
+  Future<void> _recargarDestino() async {
+    try {
+      final actualizado = await DestinoService.obtenerDestinoPorId(_destino.destinoid);
+      if (mounted) setState(() => _destino = actualizado);
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +42,7 @@ class DestinoDetalleScreen extends StatelessWidget {
         children: [
           CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(child: EncabezadoDestino(destino: destino)),
+              SliverToBoxAdapter(child: EncabezadoDestino(destino: _destino)),
               SliverToBoxAdapter(
                 child: Transform.translate(
                   offset: const Offset(0, -28),
@@ -37,21 +58,21 @@ class DestinoDetalleScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 20),
-                        IdentidadDestino(destino: destino),
+                        IdentidadDestino(destino: _destino),
                         const SizedBox(height: 24),
                         _divisor(),
                         const SizedBox(height: 24),
-                        DescripcionDestino(destino: destino),
+                        DescripcionDestino(destino: _destino),
                         const SizedBox(height: 24),
                         _divisor(),
                         const SizedBox(height: 24),
-                        HorariosDestino(destino: destino),
+                        HorariosDestino(destino: _destino),
                         const SizedBox(height: 20),
-                        TarifasDestino(destino: destino),
+                        TarifasDestino(destino: _destino),
                         const SizedBox(height: 24),
                         _divisor(),
                         const SizedBox(height: 24),
-                        MapaDestino(destino: destino),
+                        MapaDestino(destino: _destino),
                       ],
                     ),
                   ),
@@ -63,7 +84,10 @@ class DestinoDetalleScreen extends StatelessWidget {
             bottom: 0,
             left: 0,
             right: 0,
-            child: CheckinDestino(destino: destino),
+            child: CheckinDestino(
+              destino: _destino,
+              onResenaEnviada: _recargarDestino,
+            ),
           ),
         ],
       ),

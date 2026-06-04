@@ -4,7 +4,7 @@ class AppTheme {
   static const Color primaryColor = Color.fromARGB(255, 40, 69, 214);
   static const Color secondaryColor = Color.fromARGB(255, 156, 207, 255);
   static const Color surfaceColor = Color.fromARGB(255, 139, 195, 74);
-  static const Color backgroundColor = Color(0xFFF5F5F5);
+  static const Color backgroundColor = Color.fromARGB(255, 255, 255, 255);
   static const Color textoOscuro = Color(0xFF1A1A2E);
   static const Color textoSuave = Color(0xFF7B7B8F);
   static const Color colorEstrella = Color(0xFFFFC107);
