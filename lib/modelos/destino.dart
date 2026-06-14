@@ -21,6 +21,7 @@ class Destino {
   final bool esgratis;
   final List<HorarioDestino>? horariosDestino;
   final List<TarifaDestino>? tarifasDestino;
+  final int puntosDestino;
 
   Destino({
     required this.destinoid,
@@ -42,6 +43,7 @@ class Destino {
     required this.esgratis,
     this.horariosDestino,
     this.tarifasDestino,
+    this.puntosDestino = 0,
   });
 
   factory Destino.fromJson(Map<String, dynamic> json) {
@@ -75,6 +77,7 @@ class Destino {
               .map((t) => TarifaDestino.fromJson(t))
               .toList()
           : null,
+      puntosDestino: json['puntosDestino'] ?? 0,
     );
   }
 }

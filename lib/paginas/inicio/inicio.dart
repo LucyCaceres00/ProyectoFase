@@ -7,6 +7,7 @@ import '../perfil/perfil_screen.dart';
 import '../ranking/ranking_screen.dart';
 import 'destino_card.dart';
 import 'modal_destino_aleatorio.dart';
+import 'destinos_mapa.dart';
 
 class ExplorarDestinosScreen extends StatefulWidget {
   const ExplorarDestinosScreen({super.key});
@@ -218,6 +219,20 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
                           );
                         }
                       },
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.map_outlined,
+                        color: theme.colorScheme.primary,
+                      ),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DestinosMapaScreen(
+                            destinos: _destinosCargados,
+                          ),
+                        ),
+                      ),
                     ),
                     IconButton(
                       icon: Icon(

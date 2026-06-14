@@ -12,6 +12,7 @@ import '../../../servicios/registro_service.dart';
 import '../../../widgets/app_dialogo.dart';
 import '../../resena/resena_screen.dart';
 import '../../pago/pago_entrada_screen.dart';
+import 'compartir_destino.dart';
 
 class CheckinDestino extends StatefulWidget {
   final Destino destino;
@@ -29,8 +30,8 @@ class CheckinDestino extends StatefulWidget {
 class _CheckinDestinoState extends State<CheckinDestino> {
   EstadoVisita? _estadoVisita;
   bool _cargando = true;
-  int _turipuntosGanados = 0;
   final GlobalKey _tarjetaKey = GlobalKey();
+  bool _favorito = false;
 
   @override
   void initState() {
@@ -253,7 +254,7 @@ class _CheckinDestinoState extends State<CheckinDestino> {
     try {
       final usuarioId = RegistrarService().usuarioId ?? 0;
 
-      final turipuntos = await VisitaService.guardarVisita(
+      await VisitaService.guardarVisita(
         usuarioId: usuarioId,
         destinoId: widget.destino.destinoid,
         latitud: resultado.latitud!,
@@ -265,7 +266,6 @@ class _CheckinDestinoState extends State<CheckinDestino> {
 
       setState(() {
         _estadoVisita = EstadoVisita(tieneReseniaPendiente: true);
-        //_turipuntosGanados = turipuntos;
       });
 
       AppDialogo.mostrarExito(
@@ -424,8 +424,11 @@ class _CheckinDestinoState extends State<CheckinDestino> {
 
   Widget _botonCorazon() {
     return IconButton(
-      onPressed: null,
-      icon: const Icon(Icons.favorite_border, color: AppTheme.primaryColor),
+      onPressed: () => setState(() => _favorito = !_favorito),
+      icon: Icon(
+        _favorito ? Icons.favorite : Icons.favorite_border,
+        color: AppTheme.primaryColor,
+      ),
     );
   }
 
@@ -471,7 +474,7 @@ class _CheckinDestinoState extends State<CheckinDestino> {
           const SizedBox(height: 20),
           RepaintBoundary(
             key: _tarjetaKey,
-            child: _buildTarjetaCompartir(),
+            child: CompartirDestinoCard(destino: widget.destino),
           ),
           const SizedBox(height: 20),
           SizedBox(
@@ -500,108 +503,15 @@ class _CheckinDestinoState extends State<CheckinDestino> {
     );
   }
 
-  Widget _buildTarjetaCompartir() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [AppTheme.primaryColor, ui.Color.fromARGB(255, 0, 0, 0)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (widget.destino.imagenprincipal != null)
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(20)),
-              child: Image.network(
-                widget.destino.imagenprincipal!,
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  height: 180,
-                  color: Colors.white12,
-                  child: const Icon(
-                    Icons.image_outlined,
-                    color: Colors.white54,
-                    size: 48,
-                  ),
-                ),
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-            child: Column(
-              children: [
-                Text(
-                  widget.destino.nombre,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${widget.destino.municipio}, ${widget.destino.departamento}',
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.amber[600],
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.star_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        _turipuntosGanados > 0
-                            ? '+$_turipuntosGanados TuriPuntos'
-                            : 'TuriPuntos ganados',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Image.asset('imagenes/toori_logo_letras_blancas.png', height: 28),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _capturarYCompartir() async {
     try {
-      final boundary = _tarjetaKey.currentContext?.findRenderObject()
-          as RenderRepaintBoundary?;
+      final boundary =
+          _tarjetaKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
       if (boundary == null) return;
 
       final image = await boundary.toImage(pixelRatio: 3.0);
-      final byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) return;
 
       final tempDir = Directory.systemTemp;
