@@ -4,7 +4,6 @@ import 'api_service.dart';
 class RegistrarService {
   final ApiService _apiService = ApiService();
 
-  // Singleton para mantener una única instancia
   static final RegistrarService _instance = RegistrarService._internal();
   factory RegistrarService() => _instance;
   RegistrarService._internal();
@@ -90,7 +89,7 @@ class RegistrarService {
   }) async {
     try {
       final response = await _apiService.post<Map<String, dynamic>>(
-        'Authentication/recuperarContrasena',
+        'Usuario/recuperarContrasena',
         body: {'correo': correo},
         fromJson: (json) => json as Map<String, dynamic>,
       );
@@ -107,7 +106,7 @@ class RegistrarService {
       final response = await _apiService.put<Map<String, dynamic>>(
         'Usuario/cambiarContraseniaUsuario/$nuevaContrasenia',
         fromJson: (json) => json as Map<String, dynamic>,
-        requiresAuth: true,
+        //requiresAuth: true,
       );
       return response;
     } catch (e) {

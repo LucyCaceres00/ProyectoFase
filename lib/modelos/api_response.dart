@@ -15,10 +15,14 @@ class ApiResponse<T> {
     Map<String, dynamic> json, {
     T Function(dynamic)? fromJsonData,
   }) {
-    final statusCode = json['EstatusCode'] ?? 0;
-    final message = json['Message'] ?? '';
-    final dataField = json['Data'];
-    final success = json['Succeeded'] ?? (statusCode == 200);
+    final statusCode =
+        json['EstatusCode'] ?? json['StatusCode'] ?? json['statusCode'] ?? 0;
+    final message = json['Message'] ?? json['message'] ?? '';
+    final dataField = json['Data'] ?? json['data'];
+    final success =
+        json['Succeeded'] ??
+        json['succeeded'] ??
+        (statusCode >= 200 && statusCode < 300);
 
     return ApiResponse<T>(
       statusCode: statusCode,

@@ -68,7 +68,6 @@ class VisitaService {
   }
 
   /// Verifica si el usuario tiene una visita sin reseña.
-  /// Endpoint: GET /api/Visita/obtenerEstadoVisita/{usuarioId}/{destinoId}
   static Future<EstadoVisita> obtenerEstadoVisita({
     required int usuarioId,
     required int destinoId,

@@ -44,7 +44,6 @@ class _SelectorPaisDialogState extends State<SelectorPaisDialog> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // Título
             Text(
               'Selecciona tu país',
               style: TextStyle(
@@ -55,7 +54,6 @@ class _SelectorPaisDialogState extends State<SelectorPaisDialog> {
             ),
             const SizedBox(height: 20),
 
-            // Campo de búsqueda
             TextField(
               controller: _busquedaController,
               onChanged: _filtrarPaises,
@@ -125,7 +123,6 @@ class _SelectorPaisDialogState extends State<SelectorPaisDialog> {
 
             const SizedBox(height: 10),
 
-            // Botón cancelar
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(

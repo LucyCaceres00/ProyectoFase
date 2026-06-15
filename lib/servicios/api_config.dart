@@ -1,13 +1,12 @@
 class ApiConfig {
   // URL base del API según la plataforma
   static String get baseUrl {
-    return 'http://10.43.178.119:5209/api/';
+    return 'http://192.168.100.90:5209/api/';
   }
 
-  // Timeout para las peticiones (en segundos)
+  // Timeout para las peticiones
   static const Duration timeout = Duration(seconds: 30);
 
-  // Headers por defecto
   static Map<String, String> get defaultHeaders => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

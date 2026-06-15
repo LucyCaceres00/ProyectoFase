@@ -35,7 +35,7 @@ class ModalContrasenia {
             if (!ctx.mounted) return;
             setStateDialog(() => cargando = false);
 
-            if (response.success) {
+            if (response.statusCode == 200) {
               Navigator.pop(ctx);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(

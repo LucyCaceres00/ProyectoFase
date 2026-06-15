@@ -6,15 +6,14 @@ import '../modelos/api_response.dart';
 import 'api_config.dart';
 
 class ApiService {
-  // Token de autenticación (opcional)
   String? _token;
 
-  // Setter para el token
+  // Setear para el token
   void setToken(String token) {
     _token = token;
   }
 
-  // Getter para el token
+  // Obtener el token
   String? get token => _token;
 
   // Limpiar token
@@ -135,38 +134,7 @@ class ApiService {
       return ApiResponse.error('Error inesperado: $e', statusCode: 500);
     }
   }
-
-  // DELETE Request
-  Future<ApiResponse<T>> delete<T>(
-    String endpoint, {
-    T Function(dynamic)? fromJson,
-    bool requiresAuth = false,
-  }) async {
-    try {
-      final url = Uri.parse(ApiConfig.buildUrl(endpoint));
-
-      final response = await http
-          .delete(url, headers: _getHeaders(includeAuth: requiresAuth))
-          .timeout(ApiConfig.timeout);
-
-      return _handleResponse<T>(response, fromJson);
-    } on TimeoutException {
-      return ApiResponse.error(
-        'La petición tardó demasiado. Verifica tu conexión o intenta más tarde.',
-        statusCode: 408,
-      );
-    } on SocketException {
-      return ApiResponse.error('No hay conexión a internet', statusCode: 0);
-    } on http.ClientException {
-      return ApiResponse.error(
-        'Error de conexión con el servidor',
-        statusCode: 0,
-      );
-    } catch (e) {
-      return ApiResponse.error('Error inesperado: $e', statusCode: 500);
-    }
-  }
-
+  
   // Manejar respuesta HTTP
   ApiResponse<T> _handleResponse<T>(
     http.Response response,

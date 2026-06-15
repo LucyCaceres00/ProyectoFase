@@ -90,7 +90,6 @@ class CompartirDestinoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Nombre + badge de TuriPuntos
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [

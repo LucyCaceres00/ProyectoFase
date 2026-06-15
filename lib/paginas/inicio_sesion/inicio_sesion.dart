@@ -51,7 +51,6 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // Llamar al servicio de inicio de sesión
       final response = await _authService.iniciarSesion(
         correo: _correoController.text.trim(),
         contrasena: _contrasenaController.text,
@@ -145,7 +144,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 20),
 
-            // --- CAMPO: CONTRASEÑA ---
             _buildLabel("Contraseña", colors.primary),
             TextField(
               controller: _contrasenaController,
@@ -191,7 +189,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 16),
 
-            // --- BOTÓN: INICIAR SESIÓN ---
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -256,7 +253,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Helper para las etiquetas arriba de los inputs
   Widget _buildLabel(String text, Color color) {
     return Container(
       alignment: Alignment.centerLeft,

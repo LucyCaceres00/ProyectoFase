@@ -25,8 +25,7 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
 
   BannerAd? _bannerAd;
   bool _bannerListo = false;
-
-  // En producción reemplaza este ID por el tuyo de AdMob
+  
   static const String _bannerAdUnitId =
       'ca-app-pub-3940256099942544/6300978111';
 

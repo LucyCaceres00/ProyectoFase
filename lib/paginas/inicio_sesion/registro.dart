@@ -139,7 +139,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
             children: [
               const SizedBox(height: 20),
 
-              // --- TÍTULO ---
               Center(
                 child: Text(
                   'Crear Cuenta',
@@ -162,7 +161,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
               const SizedBox(height: 40),
 
-              // --- CAMPO: NOMBRE COMPLETO ---
               _buildLabel("Nombre completo", colors.primary),
               TextFormField(
                 controller: _nombreController,
@@ -220,7 +218,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
               const SizedBox(height: 20),
 
-              // --- CAMPO: PAÍS DE ORIGEN ---
               _buildLabel("País de origen", colors.primary),
               TextFormField(
                 readOnly: true,
@@ -248,7 +245,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
               const SizedBox(height: 20),
 
-              // --- CAMPO: CONTRASEÑA ---
               _buildLabel("Contraseña", colors.primary),
               TextFormField(
                 controller: _contrasenaController,
@@ -289,7 +285,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
               const SizedBox(height: 20),
 
-              // --- CAMPO: CONFIRMAR CONTRASEÑA ---
               _buildLabel("Confirmar contraseña", colors.primary),
               TextFormField(
                 controller: _confirmarContrasenaController,
@@ -331,7 +326,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
               const SizedBox(height: 40),
 
-              // --- BOTÓN: REGISTRARSE ---
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -367,7 +361,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
               const SizedBox(height: 20),
 
-              // --- TEXTO: YA TIENES CUENTA ---
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
