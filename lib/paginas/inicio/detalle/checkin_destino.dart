@@ -302,160 +302,13 @@ class _CheckinDestinoState extends State<CheckinDestino> {
   }
 
   Future<void> _mostrarModalCodigo(ResultadoUbicacion resultado) async {
-    final controller = TextEditingController();
-    int? entradaIdValidado;
-
-    final confirmado = await showDialog<bool>(
+    final entradaId = await showDialog<int>(
       context: context,
-      builder: (ctx) {
-        bool procesando = false;
-        String? errorTexto;
-
-        return StatefulBuilder(
-          builder: (ctx, setEstado) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-            title: const Column(
-              children: [
-                SizedBox(height: 8),
-                Icon(
-                  Icons.confirmation_number_outlined,
-                  size: 44,
-                  color: AppTheme.primaryColor,
-                ),
-                SizedBox(height: 12),
-                Text(
-                  'Código de entrada',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                ),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Ingresa el código de tu entrada\n(formato TUR-XXXXXX)',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppTheme.textoSuave,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: controller,
-                  textCapitalization: TextCapitalization.characters,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 2,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'TUR-XXXXXX',
-                    hintStyle: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade400,
-                      letterSpacing: 1,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    errorText: errorTexto,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.colorBorde),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.colorBorde),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: AppTheme.primaryColor,
-                        width: 1.5,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
-                    ),
-                  ),
-                  onChanged: (_) {
-                    if (errorTexto != null) {
-                      setEstado(() => errorTexto = null);
-                    }
-                  },
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: procesando ? null : () => Navigator.pop(ctx),
-                child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                onPressed: procesando
-                    ? null
-                    : () async {
-                        final codigo = controller.text.trim().toUpperCase();
-                        if (codigo.isEmpty) {
-                          setEstado(
-                            () => errorTexto = 'Ingresa el código de entrada',
-                          );
-                          return;
-                        }
-                        if (!RegExp(r'^TUR-[A-Z0-9]{6}$').hasMatch(codigo)) {
-                          setEstado(
-                            () => errorTexto =
-                                'Formato inválido (ej: TUR-AB1234)',
-                          );
-                          return;
-                        }
-                        setEstado(() => procesando = true);
-                        try {
-                          entradaIdValidado = null;
-                          Navigator.pop(ctx, true);
-                        } catch (_) {
-                          if (!ctx.mounted) return;
-                          setEstado(() {
-                            procesando = false;
-                            errorTexto =
-                                'Error al validar. Intenta nuevamente.';
-                          });
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: procesando
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text('Confirmar'),
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (ctx) => const _CodigoEntradaDialog(),
     );
 
-    controller.dispose();
-
-    if (confirmado == true && mounted) {
-      _registrarVisitaConEntrada(resultado, entradaIdValidado);
+    if (entradaId != null && mounted) {
+      _registrarVisitaConEntrada(resultado, entradaId);
     }
   }
 
@@ -768,5 +621,162 @@ class _CheckinDestinoState extends State<CheckinDestino> {
         ),
       );
     } catch (_) {}
+  }
+}
+
+class _CodigoEntradaDialog extends StatefulWidget {
+  const _CodigoEntradaDialog();
+
+  @override
+  State<_CodigoEntradaDialog> createState() => _CodigoEntradaDialogState();
+}
+
+class _CodigoEntradaDialogState extends State<_CodigoEntradaDialog> {
+  final _controller = TextEditingController();
+  bool _procesando = false;
+  String? _errorTexto;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _confirmar() async {
+    final codigo = _controller.text.trim().toUpperCase();
+    if (codigo.isEmpty) {
+      setState(() => _errorTexto = 'Ingresa el código de entrada');
+      return;
+    }
+    if (!RegExp(r'^TUR-[A-Z0-9]{6}$').hasMatch(codigo)) {
+      setState(() => _errorTexto = 'Formato inválido (ej: TUR-AB1234)');
+      return;
+    }
+    setState(() => _procesando = true);
+    try {
+      final entradaId = await EntradaService.validarCodigo(codigo);
+      if (!mounted) return;
+      if (entradaId == null) {
+        setState(() {
+          _procesando = false;
+          _errorTexto = 'Código no válido o ya utilizado';
+        });
+        return;
+      }
+      Navigator.pop(context, entradaId);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _procesando = false;
+        _errorTexto = 'Error al validar. Intenta nuevamente.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      title: const Column(
+        children: [
+          SizedBox(height: 8),
+          Icon(
+            Icons.confirmation_number_outlined,
+            size: 44,
+            color: AppTheme.primaryColor,
+          ),
+          SizedBox(height: 12),
+          Text(
+            'Código de entrada',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Ingresa el código de tu entrada\n(formato TUR-XXXXXX)',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              color: AppTheme.textoSuave,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _controller,
+            textCapitalization: TextCapitalization.characters,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 2,
+            ),
+            decoration: InputDecoration(
+              hintText: 'TUR-XXXXXX',
+              hintStyle: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade400,
+                letterSpacing: 1,
+                fontWeight: FontWeight.w400,
+              ),
+              errorText: _errorTexto,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.colorBorde),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.colorBorde),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: AppTheme.primaryColor,
+                  width: 1.5,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 14,
+              ),
+            ),
+            onChanged: (_) {
+              if (_errorTexto != null) setState(() => _errorTexto = null);
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: _procesando ? null : () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: _procesando ? null : _confirmar,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primaryColor,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: _procesando
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : const Text('Confirmar'),
+        ),
+      ],
+    );
   }
 }

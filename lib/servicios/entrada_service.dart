@@ -10,8 +10,10 @@ class EntradaService {
   static String generarCodigo() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     final rand = Random();
-    final code =
-        List.generate(6, (_) => chars[rand.nextInt(chars.length)]).join();
+    final code = List.generate(
+      6,
+      (_) => chars[rand.nextInt(chars.length)],
+    ).join();
     return 'TUR-$code';
   }
 
@@ -53,14 +55,17 @@ class EntradaService {
     );
 
     if (!responseBody.success) {
-      throw Exception(responseBody.message.isNotEmpty
-          ? responseBody.message
-          : 'Error al registrar la entrada');
+      throw Exception(
+        responseBody.message.isNotEmpty
+            ? responseBody.message
+            : 'Error al registrar la entrada',
+      );
     }
 
     if (responseBody.data != null) {
       return EntradaComprada.fromJson(
-          responseBody.data as Map<String, dynamic>);
+        responseBody.data as Map<String, dynamic>,
+      );
     }
 
     return entrada;
@@ -76,28 +81,34 @@ class EntradaService {
         .timeout(ApiConfig.timeout);
 
     if (response.statusCode == 401) throw Exception('No autorizado');
-    if (response.statusCode == 404) return null;
 
-    final responseBody = ApiResponse.fromJson(
-      jsonDecode(response.body) as Map<String, dynamic>,
-    );
+    final body = response.body.trim();
+    if (body.isEmpty) return null;
 
-    if (!responseBody.success) return null;
+    try {
+      final json = jsonDecode(body) as Map<String, dynamic>;
+      final responseBody = ApiResponse.fromJson(json);
 
-    if (responseBody.data != null) {
-      final data = responseBody.data as Map<String, dynamic>;
-      return data['entradaId'] as int?;
+      if (!responseBody.success) return null;
+
+      final data = responseBody.data;
+      if (data is Map<String, dynamic>) {
+        final id = data['entradaId'] ?? data['EntradaId'] ?? data['id'];
+        return id is num ? id.toInt() : null;
+      }
+      if (data is num) return data.toInt();
+
+      return null;
+    } catch (_) {
+      return null;
     }
-
-    return null;
   }
 
   static Future<void> marcarUsada(int entradaId) async {
     final token = RegistrarService().token;
     if (token == null) return;
 
-    final url =
-        Uri.parse(ApiConfig.buildUrl('Entrada/marcarUsada/$entradaId'));
+    final url = Uri.parse(ApiConfig.buildUrl('Entrada/marcarUsada/$entradaId'));
     await http
         .put(url, headers: ApiConfig.getAuthHeaders(token))
         .timeout(ApiConfig.timeout);
