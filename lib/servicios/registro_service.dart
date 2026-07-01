@@ -64,15 +64,20 @@ class RegistrarService {
 
       if (response.success && response.data != null) {
         final data = response.data!;
-        if (data['Token'] != null) {
-          _apiService.setToken(data['Token']);
+        final token = data['Token'] ?? data['token'];
+        if (token != null) {
+          _apiService.setToken(token as String);
         }
-        if (data['Id'] != null) {
-          _usuarioId = data['Id'] as int;
+        final idRaw = data['Id'] ?? data['id'] ?? data['usuarioId'];
+        if (idRaw != null) {
+          _usuarioId = (idRaw as num).toInt();
         }
-        _nombre = data['nombre'] as String?;
-        _correo = data['correo'] as String?;
+        _nombre = data['Nombre'] as String? ?? data['nombre'] as String?;
+        _correo = data['Correo'] as String? ?? data['correo'] as String?;
         _nivelExplorador = data['nivelExplorador'] as String?;
+        _usuarioId = data['UsuarioId'] != null
+            ? (data['UsuarioId'] as num).toInt()
+            : _usuarioId;
         if (data['turiPuntos'] != null) {
           _turiPuntos = (data['turiPuntos'] as num).toInt();
         }
@@ -103,10 +108,10 @@ class RegistrarService {
     required String nuevaContrasenia,
   }) async {
     try {
-      final response = await _apiService.put<Map<String, dynamic>>(
+      final response = await _apiService.post<Map<String, dynamic>>(
         'Usuario/cambiarContraseniaUsuario/$nuevaContrasenia',
         fromJson: (json) => json as Map<String, dynamic>,
-        //requiresAuth: true,
+        requiresAuth: true,
       );
       return response;
     } catch (e) {

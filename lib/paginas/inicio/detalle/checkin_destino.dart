@@ -9,6 +9,7 @@ import '../../../modelos/estado_visita.dart';
 import '../../../servicios/ubicacion_service.dart';
 import '../../../servicios/visita_service.dart';
 import '../../../servicios/registro_service.dart';
+import '../../../servicios/entrada_service.dart';
 import '../../../widgets/app_dialogo.dart';
 import '../../resena/resena_screen.dart';
 import '../../pago/pago_entrada_screen.dart';
@@ -158,7 +159,7 @@ class _CheckinDestinoState extends State<CheckinDestino> {
 
       if (resultado.permitido) {
         if (_requierePago()) {
-          _abrirPagoEntrada(resultado);
+          _mostrarModalCodigo(resultado);
         } else {
           _mostrarConfirmacion(resultado);
         }
@@ -300,24 +301,227 @@ class _CheckinDestinoState extends State<CheckinDestino> {
     return tarifas.any((t) => t.precio > 0);
   }
 
-  Future<void> _abrirPagoEntrada(ResultadoUbicacion resultado) async {
-    final exitoso = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>
-            PagoEntradaScreen(destino: widget.destino, resultado: resultado),
-      ),
+  Future<void> _mostrarModalCodigo(ResultadoUbicacion resultado) async {
+    final controller = TextEditingController();
+    int? entradaIdValidado;
+
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        bool procesando = false;
+        String? errorTexto;
+
+        return StatefulBuilder(
+          builder: (ctx, setEstado) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            title: const Column(
+              children: [
+                SizedBox(height: 8),
+                Icon(
+                  Icons.confirmation_number_outlined,
+                  size: 44,
+                  color: AppTheme.primaryColor,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'Código de entrada',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Ingresa el código de tu entrada\n(formato TUR-XXXXXX)',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.textoSuave,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: controller,
+                  textCapitalization: TextCapitalization.characters,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'TUR-XXXXXX',
+                    hintStyle: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey.shade400,
+                      letterSpacing: 1,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    errorText: errorTexto,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.colorBorde),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.colorBorde),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppTheme.primaryColor,
+                        width: 1.5,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
+                  ),
+                  onChanged: (_) {
+                    if (errorTexto != null) {
+                      setEstado(() => errorTexto = null);
+                    }
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: procesando ? null : () => Navigator.pop(ctx),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: procesando
+                    ? null
+                    : () async {
+                        final codigo = controller.text.trim().toUpperCase();
+                        if (codigo.isEmpty) {
+                          setEstado(
+                            () => errorTexto = 'Ingresa el código de entrada',
+                          );
+                          return;
+                        }
+                        if (!RegExp(r'^TUR-[A-Z0-9]{6}$').hasMatch(codigo)) {
+                          setEstado(
+                            () => errorTexto =
+                                'Formato inválido (ej: TUR-AB1234)',
+                          );
+                          return;
+                        }
+                        setEstado(() => procesando = true);
+                        try {
+                          entradaIdValidado = null;
+                          Navigator.pop(ctx, true);
+                        } catch (_) {
+                          if (!ctx.mounted) return;
+                          setEstado(() {
+                            procesando = false;
+                            errorTexto =
+                                'Error al validar. Intenta nuevamente.';
+                          });
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: procesando
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text('Confirmar'),
+              ),
+            ],
+          ),
+        );
+      },
     );
 
-    if (exitoso == true && mounted) {
-      setState(() => _estadoVisita = EstadoVisita(tieneReseniaPendiente: true));
+    controller.dispose();
+
+    if (confirmado == true && mounted) {
+      _registrarVisitaConEntrada(resultado, entradaIdValidado);
+    }
+  }
+
+  Future<void> _registrarVisitaConEntrada(
+    ResultadoUbicacion resultado,
+    int? entradaId,
+  ) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final usuarioId = RegistrarService().usuarioId ?? 0;
+
+      await VisitaService.guardarVisita(
+        usuarioId: usuarioId,
+        destinoId: widget.destino.destinoid,
+        latitud: resultado.latitud!,
+        longitud: resultado.longitud!,
+      );
+
+      if (entradaId != null) {
+        await EntradaService.marcarUsada(entradaId);
+      }
+
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      setState(() {
+        _estadoVisita = EstadoVisita(tieneReseniaPendiente: true);
+      });
+
       AppDialogo.mostrarExito(
         context,
         titulo: '¡Visita registrada!',
         mensaje:
             'Tu visita a ${widget.destino.nombre} fue registrada. ¡Comparte tu experiencia escribiendo una reseña!',
       );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      final esNoAutorizado =
+          e.toString().contains('No autorizado') ||
+          e.toString().contains('sesión');
+
+      AppDialogo.mostrar(
+        context,
+        icono: esNoAutorizado ? Icons.lock_outline : Icons.error_outline,
+        titulo: esNoAutorizado ? 'Sesión requerida' : 'Error al registrar',
+        mensaje: esNoAutorizado
+            ? 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.'
+            : 'No se pudo registrar la visita. Por favor, intente nuevamente.',
+      );
     }
+  }
+
+  Future<void> _abrirCompraEntrada() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PagoEntradaScreen(destino: widget.destino),
+      ),
+    );
   }
 
   Future<void> _abrirResena() async {
@@ -353,28 +557,48 @@ class _CheckinDestinoState extends State<CheckinDestino> {
           ),
         ],
       ),
-      child: SizedBox(
-        width: double.infinity,
-        height: 52,
-        child: _cargando
-            ? const Center(child: CircularProgressIndicator())
-            : _estadoVisita?.tieneReseniaPendiente == true
-            ? Row(
+      child: _cargando
+          ? const SizedBox(
+              height: 52,
+              child: Center(child: CircularProgressIndicator()),
+            )
+          : _estadoVisita?.tieneReseniaPendiente == true
+          ? SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: Row(
                 children: [
                   Expanded(child: _botonResena()),
                   const SizedBox(width: 12),
                   _botonCorazon(),
                   _botonCompartir(),
                 ],
-              )
-            : Row(
-                children: [
-                  Expanded(child: _botonCheckin()),
-                  const SizedBox(width: 12),
-                  _botonCorazon(),
-                ],
               ),
-      ),
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: Row(
+                    children: [
+                      Expanded(child: _botonCheckin()),
+                      const SizedBox(width: 12),
+                      _botonCorazon(),
+                    ],
+                  ),
+                ),
+                if (_requierePago()) ...[
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: _botonComprar(),
+                  ),
+                ],
+              ],
+            ),
     );
   }
 
@@ -428,6 +652,22 @@ class _CheckinDestinoState extends State<CheckinDestino> {
       icon: Icon(
         _favorito ? Icons.favorite : Icons.favorite_border,
         color: AppTheme.primaryColor,
+      ),
+    );
+  }
+
+  Widget _botonComprar() {
+    return OutlinedButton.icon(
+      onPressed: _abrirCompraEntrada,
+      icon: const Icon(Icons.confirmation_number_outlined, size: 18),
+      label: const Text(
+        'Comprar entrada',
+        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+      ),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppTheme.primaryColor,
+        side: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }

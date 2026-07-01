@@ -27,7 +27,7 @@ class ApiResponse<T> {
     return ApiResponse<T>(
       statusCode: statusCode,
       message: message,
-      data: dataField != null && fromJsonData != null
+      data: dataField != null && fromJsonData != null && (dataField is Map || dataField is List)
           ? fromJsonData(dataField)
           : dataField as T?,
       success: success,

@@ -232,9 +232,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                   Navigator.pop(ctx);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(response.success
-                                          ? 'Contraseña actualizada correctamente'
-                                          : response.message),
+                                      content: Text(response.message),
                                       backgroundColor: response.success ? Colors.green : Colors.red,
                                     ),
                                   );

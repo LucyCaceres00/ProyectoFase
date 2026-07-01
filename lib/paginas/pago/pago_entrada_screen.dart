@@ -7,15 +7,17 @@ import '../../servicios/registro_service.dart';
 import '../../servicios/ubicacion_service.dart';
 import '../../servicios/visita_service.dart';
 import '../../widgets/app_dialogo.dart';
+import '../../modelos/entrada.dart';
+import '../../servicios/entrada_service.dart';
 
 class PagoEntradaScreen extends StatefulWidget {
   final Destino destino;
-  final ResultadoUbicacion resultado;
+  final ResultadoUbicacion? resultado;
 
   const PagoEntradaScreen({
     super.key,
     required this.destino,
-    required this.resultado,
+    this.resultado,
   });
 
   @override
@@ -34,6 +36,8 @@ class _PagoEntradaScreenState extends State<PagoEntradaScreen> {
 
   bool _procesando = false;
   bool _pagado = false;
+  String? _codigo;
+  int? _entradaId;
 
   static const int _maxPorTipo = 10;
 
@@ -114,17 +118,57 @@ class _PagoEntradaScreenState extends State<PagoEntradaScreen> {
 
     setState(() => _procesando = true);
 
-    // Simula procesamiento de pago
     if (_esPago) await Future.delayed(const Duration(seconds: 2));
+
+    final codigo = EntradaService.generarCodigo();
+    int? entradaId;
+
+    try {
+      final entrada = await EntradaService.registrarEntrada(
+        destinoId: widget.destino.destinoid,
+        cantidadTotal: _totalEntradas,
+        montoTotal: _total,
+        moneda: _tarifas.isNotEmpty ? _tarifas.first.moneda : 'HNL',
+        codigo: codigo,
+        detalles: _entradasSeleccionadas
+            .map((e) => DetalleEntrada(
+                  tarifaId: e.value.tarifaId,
+                  tipoVisitante: e.value.visitante,
+                  cantidad: _cantidades[e.key]!,
+                  precioUnitario: e.value.precio,
+                ))
+            .toList(),
+      );
+      entradaId = entrada.entradaId;
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _procesando = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al registrar entrada: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+      return;
+    }
 
     if (!mounted) return;
     setState(() {
       _procesando = false;
       _pagado = true;
+      _codigo = codigo;
+      _entradaId = entradaId;
     });
   }
 
   Future<void> _registrarCheckin() async {
+    if (widget.resultado == null) {
+      Navigator.pop(context);
+      return;
+    }
+
     setState(() => _procesando = true);
 
     try {
@@ -132,9 +176,13 @@ class _PagoEntradaScreenState extends State<PagoEntradaScreen> {
       await VisitaService.guardarVisita(
         usuarioId: usuarioId,
         destinoId: widget.destino.destinoid,
-        latitud: widget.resultado.latitud!,
-        longitud: widget.resultado.longitud!,
+        latitud: widget.resultado!.latitud!,
+        longitud: widget.resultado!.longitud!,
       );
+
+      if (_entradaId != null) {
+        await EntradaService.marcarUsada(_entradaId!);
+      }
 
       if (!mounted) return;
       Navigator.pop(context, true);
@@ -169,7 +217,9 @@ class _PagoEntradaScreenState extends State<PagoEntradaScreen> {
           onPressed: _procesando ? null : () => Navigator.pop(context),
         ),
         title: Text(
-          _pagado ? 'Confirmar visita' : 'Pago de entrada',
+          _pagado
+              ? (widget.resultado == null ? 'Entrada confirmada' : 'Confirmar visita')
+              : (widget.resultado == null ? 'Comprar entrada' : 'Pago de entrada'),
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -274,6 +324,10 @@ class _PagoEntradaScreenState extends State<PagoEntradaScreen> {
             ],
           ),
         ),
+        const SizedBox(height: 24),
+
+        // ── Código de entrada ────────────────────────────────────────
+        _tarjetaCodigo(),
         const SizedBox(height: 24),
 
         // ── Destino ──────────────────────────────────────────────────
@@ -387,6 +441,80 @@ class _PagoEntradaScreenState extends State<PagoEntradaScreen> {
         ),
         const SizedBox(height: 8),
       ],
+    );
+  }
+
+  // ── Tarjeta código ────────────────────────────────────────────────────────────
+
+  Widget _tarjetaCodigo() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.primaryColor,
+            AppTheme.primaryColor.withValues(alpha: 0.75),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            'CÓDIGO DE ENTRADA',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Colors.white70,
+              letterSpacing: 1.5,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _codigo ?? '—',
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: 4,
+                ),
+              ),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: () {
+                  if (_codigo != null) {
+                    Clipboard.setData(ClipboardData(text: _codigo!));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Código copiado al portapapeles'),
+                        duration: Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+                child: const Icon(
+                  Icons.copy_rounded,
+                  color: Colors.white70,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Presenta este código al ingresar al destino',
+            style: TextStyle(fontSize: 12, color: Colors.white70),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
@@ -803,14 +931,20 @@ class _PagoEntradaScreenState extends State<PagoEntradaScreen> {
                 height: 22,
                 child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
               )
-            : const Row(
+            : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.check_circle_outline, size: 20),
-                  SizedBox(width: 8),
+                  Icon(
+                    widget.resultado == null
+                        ? Icons.check_rounded
+                        : Icons.check_circle_outline,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
                   Text(
-                    'Hacer Check-In',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    widget.resultado == null ? 'Listo' : 'Hacer Check-In',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                 ],
               ),

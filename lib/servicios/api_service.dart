@@ -140,19 +140,16 @@ class ApiService {
     http.Response response,
     T Function(dynamic)? fromJson,
   ) {
+    final body = response.body.trim();
+    if (body.isEmpty) {
+      return ApiResponse.error(
+        'El servidor no devolvió respuesta',
+        statusCode: response.statusCode,
+      );
+    }
     try {
-      final jsonResponse = jsonDecode(response.body);
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        return ApiResponse<T>.fromJson(jsonResponse, fromJsonData: fromJson);
-      } else {
-        // Error del servidor
-        final message =
-            jsonResponse['message'] ??
-            jsonResponse['Message'] ??
-            'Error en la petición';
-        return ApiResponse.error(message, statusCode: response.statusCode);
-      }
+      final jsonResponse = jsonDecode(body) as Map<String, dynamic>;
+      return ApiResponse<T>.fromJson(jsonResponse, fromJsonData: fromJson);
     } catch (e) {
       return ApiResponse.error(
         'Error al procesar la respuesta del servidor',

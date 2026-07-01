@@ -14,12 +14,14 @@ class TarifaDestino {
   });
 
   factory TarifaDestino.fromJson(Map<String, dynamic> json) {
+    final idRaw = json['TarifaId'] ?? json['tarifaId'] ?? json['tarifaid'];
+    final precioRaw = json['Precio'] ?? json['precio'];
     return TarifaDestino(
-      tarifaId: json['tarifaId'] ?? 0,
-      visitante: json['Visitante'] ?? '',
-      precio: (json['precio'] ?? 0).toDouble(),
-      moneda: json['moneda'] ?? '',
-      descripcion: json['descripcion'] ?? '',
+      tarifaId:   idRaw != null ? (idRaw as num).toInt() : 0,
+      visitante:  json['Visitante']  ?? json['visitante']  ?? '',
+      precio:     precioRaw != null ? (precioRaw as num).toDouble() : 0.0,
+      moneda:     json['Moneda']     ?? json['moneda']     ?? 'HNL',
+      descripcion: json['Descripcion'] ?? json['descripcion'] ?? '',
     );
   }
 
