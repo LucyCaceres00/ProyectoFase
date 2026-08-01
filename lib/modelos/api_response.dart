@@ -16,8 +16,34 @@ class ApiResponse<T> {
     T Function(dynamic)? fromJsonData,
   }) {
     final statusCode =
-        json['EstatusCode'] ?? json['StatusCode'] ?? json['statusCode'] ?? 0;
-    final message = json['Message'] ?? json['message'] ?? '';
+        json['EstatusCode'] ??
+        json['StatusCode'] ??
+        json['statusCode'] ??
+        json['status'] ?? // ASP.NET ValidationProblemDetails
+        0;
+
+    // Si el body no trae Message/message, puede ser un error automático de
+    // ASP.NET Core (ValidationProblemDetails: { title, errors: {campo: [..]} })
+    // en vez de nuestra clase Response<T> — por ejemplo cuando [ApiController]
+    // rechaza el request por un campo no-nulo faltante antes de llegar al
+    // controlador. Armamos un mensaje legible a partir de eso si aparece.
+    String message = json['Message'] ?? json['message'] ?? '';
+    if (message.isEmpty) {
+      final titulo = json['title'] as String?;
+      final errores = json['errors'];
+      if (errores is Map && errores.isNotEmpty) {
+        final detalle = errores.values
+            .expand((v) => v is List ? v : [v])
+            .map((e) => e.toString())
+            .join(' ');
+        message = detalle.isNotEmpty
+            ? detalle
+            : (titulo ?? 'Solicitud inválida');
+      } else if (titulo != null && titulo.isNotEmpty) {
+        message = titulo;
+      }
+    }
+
     final dataField = json['Data'] ?? json['data'];
     final success =
         json['Succeeded'] ??

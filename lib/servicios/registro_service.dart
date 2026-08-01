@@ -13,6 +13,7 @@ class RegistrarService {
   String? _correo;
   String? _nivelExplorador;
   int? _turiPuntos;
+  bool _esAdministrador = false;
 
   /// Obtener el usuarioId del usuario autenticado
   int? get usuarioId => _usuarioId;
@@ -20,12 +21,14 @@ class RegistrarService {
   String? get correo => _correo;
   String? get nivelExplorador => _nivelExplorador;
   int? get turiPuntos => _turiPuntos;
+  bool get esAdministrador => _esAdministrador;
 
   Future<ApiResponse<Map<String, dynamic>>> registrarUsuario({
     required String nombre,
     required String correo,
     required String contrasena,
     required String pais,
+    bool esAdministrador = false,
   }) async {
     try {
       final response = await _apiService.post<Map<String, dynamic>>(
@@ -41,9 +44,16 @@ class RegistrarService {
           'TuriPuntos': 0,
           'Estado': '',
           'FechaCreacion': null,
+          'EsAdministrador': esAdministrador,
         },
         fromJson: (json) => json as Map<String, dynamic>,
       );
+
+      if (response.success && response.data != null) {
+        final data = response.data!;
+        _esAdministrador =
+            data['EsAdministrador'] ?? data['esAdministrador'] ?? esAdministrador;
+      }
 
       return response;
     } catch (e) {
@@ -81,6 +91,8 @@ class RegistrarService {
         if (data['turiPuntos'] != null) {
           _turiPuntos = (data['turiPuntos'] as num).toInt();
         }
+        _esAdministrador =
+            data['EsAdministrador'] ?? data['esAdministrador'] ?? false;
       }
 
       return response;
@@ -130,6 +142,7 @@ class RegistrarService {
     _correo = null;
     _nivelExplorador = null;
     _turiPuntos = null;
+    _esAdministrador = false;
   }
 
   /// Obtener el token actual

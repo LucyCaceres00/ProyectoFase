@@ -3,6 +3,7 @@ import '../inicio/inicio.dart';
 import '../inicio_sesion/registro.dart';
 import '../inicio_sesion/modal_contrasenia.dart';
 import '../../servicios/registro_service.dart';
+import '../../servicios/admin_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -61,6 +62,10 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       if (response.success) {
+        await AdminService.establecerSesionAdministrador(
+          _authService.esAdministrador,
+        );
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -247,6 +252,29 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ],
             ),
+
+            TextButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const RegistroScreen(esAdministrador: true),
+                  ),
+                );
+              },
+              icon: Icon(
+                Icons.admin_panel_settings_outlined,
+                size: 18,
+                color: Colors.grey[600],
+              ),
+              label: Text(
+                '¿Eres administrador? Crea tu cuenta aquí',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ),
+
+            const SizedBox(height: 10),
           ],
         ),
       ),

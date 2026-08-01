@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import '../inicio_sesion/paises_modal.dart';
 import '../../servicios/registro_service.dart';
+import '../../servicios/admin_service.dart';
 import '../inicio/inicio.dart';
 
 class RegistroScreen extends StatefulWidget {
-  const RegistroScreen({super.key});
+  final bool esAdministrador;
+
+  const RegistroScreen({super.key, this.esAdministrador = false});
 
   @override
   State<RegistroScreen> createState() => _RegistroScreenState();
@@ -45,12 +48,17 @@ class _RegistroScreenState extends State<RegistroScreen> {
           correo: _correoController.text.trim(),
           contrasena: _contrasenaController.text,
           pais: _paisSeleccionado!,
+          esAdministrador: widget.esAdministrador,
         );
         setState(() {
           _isLoading = false;
         });
 
         if (response.success) {
+          await AdminService.establecerSesionAdministrador(
+            _authService.esAdministrador,
+          );
+
           if (mounted) {
             // Guardar el token si viene en la respuesta
             if (response.data != null && response.data?['Token'] != null) {
@@ -141,7 +149,8 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
               Center(
                 child: Text(
-                  'Crear Cuenta',
+                  widget.esAdministrador ? 'Crear Cuenta de Administrador' : 'Crear Cuenta',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
@@ -154,10 +163,37 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
               Center(
                 child: Text(
-                  'Completa tus datos para registrarte',
+                  widget.esAdministrador
+                      ? 'Este correo tendrá acceso para gestionar destinos'
+                      : 'Completa tus datos para registrarte',
+                  textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                 ),
               ),
+
+              if (widget.esAdministrador) ...[
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.admin_panel_settings_outlined, color: colors.primary, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Modo administrador',
+                          style: TextStyle(color: colors.primary, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
 
               const SizedBox(height: 40),
 

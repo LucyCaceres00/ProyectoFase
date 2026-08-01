@@ -3,6 +3,8 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../app_theme.dart';
 import '../../modelos/destino.dart';
 import '../../servicios/destino_service.dart';
+import '../../servicios/admin_service.dart';
+import '../admin/crear_destino_screen.dart';
 import '../perfil/perfil_screen.dart';
 import '../ranking/ranking_screen.dart';
 import 'destino_card.dart';
@@ -25,7 +27,8 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
 
   BannerAd? _bannerAd;
   bool _bannerListo = false;
-  
+  bool _esAdministrador = false;
+
   static const String _bannerAdUnitId =
       'ca-app-pub-3940256099942544/6300978111';
 
@@ -34,6 +37,22 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
     super.initState();
     _destinosFuture = DestinoService.obtenerDestinos();
     _cargarBanner();
+    _verificarAdministrador();
+  }
+
+  Future<void> _verificarAdministrador() async {
+    final esAdmin = await AdminService.esSesionAdministrador();
+    if (mounted) setState(() => _esAdministrador = esAdmin);
+  }
+
+  Future<void> _irACrearDestino() async {
+    final creado = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => const CrearDestinoScreen()),
+    );
+    if (creado == true) {
+      _refrescarDestinos();
+    }
   }
 
   void _cargarBanner() {
@@ -201,24 +220,34 @@ class _ExplorarDestinosScreenState extends State<ExplorarDestinosScreen> {
                 ),
                 Row(
                   children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.shuffle,
-                        color: theme.colorScheme.primary,
+                    if (_esAdministrador)
+                      IconButton(
+                        icon: Icon(
+                          Icons.add_location_alt_outlined,
+                          color: theme.colorScheme.primary,
+                        ),
+                        tooltip: 'Crear destino',
+                        onPressed: _irACrearDestino,
                       ),
-                      onPressed: () {
-                        if (_destinosCargados.length >= 2) {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            barrierColor: Colors.black87,
-                            builder: (_) => ModalDestinoAleatorio(
-                              destinos: _destinosCargados,
-                            ),
-                          );
-                        }
-                      },
-                    ),
+                    if (!_esAdministrador)
+                      IconButton(
+                        icon: Icon(
+                          Icons.shuffle,
+                          color: theme.colorScheme.primary,
+                        ),
+                        onPressed: () {
+                          if (_destinosCargados.length >= 2) {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              barrierColor: Colors.black87,
+                              builder: (_) => ModalDestinoAleatorio(
+                                destinos: _destinosCargados,
+                              ),
+                            );
+                          }
+                        },
+                      ),
                     IconButton(
                       icon: Icon(
                         Icons.map_outlined,
